@@ -178,6 +178,28 @@ footer{font-size:11px;color:var(--muted);text-align:center;padding-top:4px}
     </div>
 
     <div class="panel">
+      <h3>🚨 Ringing alerts (Pushover)</h3>
+      <div class="check"><input type="checkbox" id="poOn"> Ring until I acknowledge when the team finishes</div>
+      <label>Your User Key (from pushover.net)</label>
+      <input type="password" id="poUser" placeholder="u...">
+      <label>App API Token (from pushover.net/apps)</label>
+      <input type="password" id="poToken" placeholder="a...">
+      <div style="margin-top:10px"><button class="btn ghost" id="poTest" style="width:100%">Test ringing alert</button></div>
+      <div class="hint">Repeats a loud alert every 30 seconds for 5 minutes until you tap <b>Acknowledge</b> in the Pushover app.</div>
+    </div>
+
+    <div class="panel">
+      <h3>☎️ Real phone call (Twilio)</h3>
+      <div class="check"><input type="checkbox" id="callOn"> Call my real phone when the team finishes</div>
+      <label>Your call link (Twilio Function URL)</label>
+      <input type="text" id="callUrl" placeholder="https://....twil.io/call">
+      <label>Call password (the CALL_SECRET you set in Twilio)</label>
+      <input type="password" id="callSecret">
+      <div style="margin-top:10px"><button class="btn ghost" id="callTest" style="width:100%">Test real call</button></div>
+      <div class="hint">Your phone number is stored only in your Twilio account, never in this app.</div>
+    </div>
+
+    <div class="panel">
       <h3>Settings</h3>
       <label>Your name in the chat</label>
       <input type="text" id="userName" value="Ryan">
@@ -501,6 +523,10 @@ async function runRounds(){
     sys('📱 Calling your phone…');
     if (await ringPhone(buildBrief())) sys('📱 Update sent to your phone.');
   }
+  if (completed && transcript.some(m => m.kind !== 'user')) {
+    if ($('poOn').checked && await pushoverAlert(buildBrief())) sys('🚨 Ringing alert sent (repeats until you acknowledge).');
+    if ($('callOn').checked && await realCall(buildBrief())) sys('☎️ Calling your real phone now.');
+  }
 }
 async function agentTurn(a, active, prompt, kind){
   const t = typing(a);
@@ -663,6 +689,47 @@ async function ringPhone(brief, title){
 $('testNotify').onclick = async () => {
   if (await ringPhone('This is a test call from your AI Roundtable team. Everything is connected. Next time we finish a task, we will call you with the update.', '📞 Test call from AI Team')) setStatus('Test sent. Check your phone.');
 };
+// Pushover ringing alerts + Twilio real calls
+[['poUser','poUser'],['poToken','poToken'],['callUrl','callUrl'],['callSecret','callSecret']].forEach(([id,k]) => {
+  $(id).value = store.get(k, '');
+  $(id).addEventListener('input', () => store.set(k, $(id).value.trim()));
+});
+[['poOn','poOn'],['callOn','callOn']].forEach(([id,k]) => {
+  $(id).checked = store.get(k, false);
+  $(id).addEventListener('change', () => store.set(k, $(id).checked));
+});
+async function pushoverAlert(brief, title){
+  const user = $('poUser').value.trim(), token = $('poToken').value.trim();
+  if (!user || !token) { sys('Pushover: add your User Key and API Token first.', true); return false; }
+  const link = $('phoneLink').value.trim().replace(/#.*$/, '') + '#brief=' + encodeURIComponent(brief);
+  const body = new URLSearchParams({ token, user, title: title || '🚨 AI Team is calling',
+    message: plainText(brief).slice(0, 900), priority: '2', retry: '30', expire: '300', sound: 'persistent',
+    url: link.slice(0, 512).length === link.length ? link : $('phoneLink').value.trim(), url_title: 'Answer the call' });
+  try {
+    const res = await fetch('https://api.pushover.net/1/messages.json', { method:'POST', body });
+    const d = await res.json().catch(() => ({}));
+    if (!res.ok || d.status !== 1) throw new Error((d.errors || [res.status]).join(', '));
+    return true;
+  } catch (e) {
+    if (e instanceof TypeError) { // browser blocked reading the reply; send anyway
+      try { await fetch('https://api.pushover.net/1/messages.json', { method:'POST', body, mode:'no-cors' }); return true; } catch {}
+    }
+    sys('Pushover failed: ' + e.message, true); return false;
+  }
+}
+async function realCall(brief){
+  const url = $('callUrl').value.trim(), secret = $('callSecret').value.trim();
+  if (!url || !secret) { sys('Real call: add your call link and password first.', true); return false; }
+  try {
+    const res = await fetch(url, { method:'POST', body: new URLSearchParams({ secret, message: plainText(brief).slice(0, 1200) }) });
+    const d = await res.json().catch(() => ({}));
+    if (!res.ok || !d.ok) throw new Error(d.error || res.status);
+    return true;
+  } catch (e) { sys('Real call failed: ' + e.message, true); return false; }
+}
+$('poTest').onclick = async () => { if (await pushoverAlert('This is a test ringing alert from your AI team. Tap Acknowledge to stop it.', '🚨 Test alert from AI Team')) setStatus('Ringing alert sent. Check your phone.'); };
+$('callTest').onclick = async () => { setStatus('☎️ Calling your phone…'); if (await realCall('This is a test call. Your AI Roundtable phone calls are working. Next time we finish a task, we will call you with the update.')) setStatus('☎️ Call started. Your phone should ring in a few seconds.'); };
+
 // incoming call (opened from the phone notification)
 (function checkIncoming(){
   const m = location.hash.match(/^#brief=(.*)$/s);
