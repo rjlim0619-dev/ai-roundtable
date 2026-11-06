@@ -184,6 +184,8 @@ footer{font-size:11px;color:var(--muted);text-align:center;padding-top:4px}
       <input type="password" id="poUser" placeholder="u...">
       <label>App API Token (from pushover.net/apps)</label>
       <input type="password" id="poToken" placeholder="a...">
+      <label>Ringtone (Pushover sound name)</label>
+      <input type="text" id="poSound">
       <div style="margin-top:10px"><button class="btn ghost" id="poTest" style="width:100%">Test ringing alert</button></div>
       <div class="hint">Repeats a loud alert every 30 seconds for 5 minutes until you tap <b>Acknowledge</b> in the Pushover app.</div>
     </div>
@@ -690,6 +692,8 @@ $('testNotify').onclick = async () => {
   if (await ringPhone('This is a test call from your AI Roundtable team. Everything is connected. Next time we finish a task, we will call you with the update.', '📞 Test call from AI Team')) setStatus('Test sent. Check your phone.');
 };
 // Pushover ringing alerts + Twilio real calls
+$('poSound').value = store.get('poSound', 'aicall');
+$('poSound').addEventListener('input', () => store.set('poSound', $('poSound').value.trim()));
 [['poUser','poUser'],['poToken','poToken'],['callUrl','callUrl'],['callSecret','callSecret']].forEach(([id,k]) => {
   $(id).value = store.get(k, '');
   $(id).addEventListener('input', () => store.set(k, $(id).value.trim()));
@@ -703,7 +707,7 @@ async function pushoverAlert(brief, title){
   if (!user || !token) { sys('Pushover: add your User Key and API Token first.', true); return false; }
   const link = $('phoneLink').value.trim().replace(/#.*$/, '') + '#brief=' + encodeURIComponent(brief);
   const body = new URLSearchParams({ token, user, title: title || '🚨 AI Team is calling',
-    message: plainText(brief).slice(0, 900), priority: '2', retry: '30', expire: '300', sound: 'persistent',
+    message: plainText(brief).slice(0, 900), priority: '2', retry: '30', expire: '300', sound: $('poSound').value.trim() || 'persistent',
     url: link.slice(0, 512).length === link.length ? link : $('phoneLink').value.trim(), url_title: 'Answer the call' });
   try {
     const res = await fetch('https://api.pushover.net/1/messages.json', { method:'POST', body });
