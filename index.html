@@ -167,6 +167,8 @@ footer{font-size:11px;color:var(--muted);text-align:center;padding-top:4px}
     <div class="panel">
       <h3>📱 Phone alerts</h3>
       <div class="check"><input type="checkbox" id="notifyOn"> Notify my phone when the team finishes</div>
+      <label>Ring my phone</label>
+      <select id="ringTimes"><option value="1">1 time</option><option value="3">3 times</option><option value="5" selected>5 times (like a real call)</option><option value="8">8 times</option></select>
       <label>Your alert channel (type this in the ntfy app)</label>
       <div class="row"><input type="text" id="ntfyTopic"><button class="btn ghost" id="copyTopic" style="flex:none">Copy</button></div>
       <label>App link for your phone</label>
@@ -496,7 +498,8 @@ async function runRounds(){
     if (!speakQueue) maybeAutoListen();
   }
   if (completed && $('notifyOn').checked && transcript.some(m => m.kind !== 'user')) {
-    if (await notifyPhone(buildBrief())) sys('📱 Update sent to your phone.');
+    sys('📱 Calling your phone…');
+    if (await ringPhone(buildBrief())) sys('📱 Update sent to your phone.');
   }
 }
 async function agentTurn(a, active, prompt, kind){
@@ -621,6 +624,8 @@ store.set('ntfyTopic', $('ntfyTopic').value);
 $('ntfyTopic').addEventListener('input', () => store.set('ntfyTopic', $('ntfyTopic').value.trim()));
 $('phoneLink').value = store.get('phoneLink', 'https://rjlim0619-dev.github.io/ai-roundtable/');
 $('phoneLink').addEventListener('input', () => store.set('phoneLink', $('phoneLink').value.trim()));
+$('ringTimes').value = store.get('ringTimes', '5');
+$('ringTimes').addEventListener('change', () => store.set('ringTimes', $('ringTimes').value));
 $('notifyOn').checked = store.get('notifyOn', false);
 $('notifyOn').addEventListener('change', () => store.set('notifyOn', $('notifyOn').checked));
 $('copyTopic').onclick = async () => { try { await navigator.clipboard.writeText($('ntfyTopic').value); setStatus('Channel copied.'); } catch { setStatus('Copy failed; select it and press Ctrl+C.'); } };
@@ -645,8 +650,18 @@ async function notifyPhone(brief, title){
     return true;
   } catch (e) { sys('Phone alert failed: ' + e.message, true); return false; }
 }
+async function ringPhone(brief, title){
+  const n = +$('ringTimes').value || 1;
+  for (let i = 0; i < n; i++) {
+    const t = (title || '📞 AI Team is calling') + (n > 1 ? ` (ring ${i+1}/${n})` : '');
+    if (!(await notifyPhone(brief, t))) return false;
+    if (i < n - 1) { setStatus(`📱 Ringing your phone… ${i+1}/${n}`); await new Promise(r => setTimeout(r, 6000)); }
+  }
+  setStatus('');
+  return true;
+}
 $('testNotify').onclick = async () => {
-  if (await notifyPhone('This is a test call from your AI Roundtable team. Everything is connected. Next time we finish a task, we will call you with the update.', '📞 Test call from AI Team')) setStatus('Test sent. Check your phone.');
+  if (await ringPhone('This is a test call from your AI Roundtable team. Everything is connected. Next time we finish a task, we will call you with the update.', '📞 Test call from AI Team')) setStatus('Test sent. Check your phone.');
 };
 // incoming call (opened from the phone notification)
 (function checkIncoming(){
