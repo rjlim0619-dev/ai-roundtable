@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Roundtable</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#040812; --bg2:#0a1324; --panel:#0c1830; --line:rgba(0,229,255,.35);
+  --cyan:#00e5ff; --text:#dbe9ff; --muted:#7f95b8; --danger:#ff5577;
+  --cut:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;font-size:15px}
+body{background:
+  radial-gradient(1200px 600px at 80% -10%,rgba(0,229,255,.10),transparent 60%),
+  radial-gradient(900px 500px at -10% 110%,rgba(140,80,255,.10),transparent 60%),
+  linear-gradient(rgba(0,229,255,.035) 1px,transparent 1px) 0 0/100% 32px,
+  var(--bg);}
+button,input,select,textarea{font:inherit;color:inherit}
+.app{display:grid;grid-template-columns:340px 1fr;grid-template-rows:auto 1fr;height:100vh}
+header{grid-column:1/-1;display:flex;align-items:center;gap:14px;padding:12px 20px;border-bottom:1px solid var(--line);background:rgba(4,8,18,.8);backdrop-filter:blur(6px)}
+.logo{font-family:Orbitron,sans-serif;font-weight:700;letter-spacing:.12em;color:var(--cyan);text-shadow:0 0 12px rgba(0,229,255,.6);font-size:18px}
+.sub{color:var(--muted);font-size:13px}
+header .spacer{flex:1}
+.chip{padding:6px 12px;border:1px solid var(--line);background:transparent;cursor:pointer;clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px);font-size:13px}
+.chip:hover{background:rgba(0,229,255,.1)}
+#menuBtn{display:none}
+
+aside{overflow:auto;padding:16px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:14px}
+.panel{background:linear-gradient(160deg,rgba(18,36,68,.9),rgba(8,16,32,.9));border:1px solid var(--line);padding:14px;
+  clip-path:polygon(var(--cut) 0,100% 0,100% calc(100% - var(--cut)),calc(100% - var(--cut)) 100%,0 100%,0 var(--cut))}
+.panel h3{margin:0 0 10px;font-family:Orbitron,sans-serif;font-size:12px;letter-spacing:.14em;color:var(--cyan);text-transform:uppercase}
+label{display:block;font-size:12px;color:var(--muted);margin:8px 0 4px}
+input[type=text],input[type=password],select,textarea{width:100%;background:#050c1a;border:1px solid rgba(0,229,255,.25);padding:8px 10px;outline:none;border-radius:2px}
+input:focus,select:focus,textarea:focus{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(0,229,255,.15)}
+.row{display:flex;gap:8px;align-items:center}
+.row>*{flex:1}
+.hint{font-size:12px;color:var(--muted);line-height:1.45;margin-top:6px}
+.hint a{color:var(--cyan)}
+.check{display:flex;gap:8px;align-items:center;font-size:13px;margin-top:8px;color:var(--text)}
+.agent{border-left:3px solid var(--c);padding:8px 10px;margin-bottom:10px;background:rgba(255,255,255,.02)}
+.agent .top{display:flex;align-items:center;gap:8px}
+.agent .top input[type=text]{flex:1;padding:5px 8px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--c);box-shadow:0 0 10px var(--c);flex:none}
+.x{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:2px 6px}
+.x:hover{color:var(--danger)}
+.btn{background:linear-gradient(90deg,rgba(0,229,255,.25),rgba(0,229,255,.08));border:1px solid var(--cyan);padding:9px 14px;cursor:pointer;font-weight:600;letter-spacing:.03em;
+  clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);transition:background .2s}
+.btn:hover{background:rgba(0,229,255,.35)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.ghost{background:transparent;border-color:rgba(0,229,255,.35);font-weight:500}
+.btn.stop{border-color:var(--danger);background:rgba(255,85,119,.15)}
+
+main{display:flex;flex-direction:column;min-height:0}
+#log{flex:1;overflow:auto;padding:22px 24px 10px;display:flex;flex-direction:column;gap:14px}
+.empty{margin:auto;text-align:center;max-width:520px;color:var(--muted)}
+.empty h2{font-family:Orbitron,sans-serif;color:var(--cyan);letter-spacing:.1em;font-size:20px;text-shadow:0 0 14px rgba(0,229,255,.5)}
+.orbs{display:flex;justify-content:center;gap:18px;margin:18px 0}
+.orb{width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff8,var(--c) 45%,transparent 72%);box-shadow:0 0 22px var(--c);animation:float 3s ease-in-out infinite}
+.orb:nth-child(2){animation-delay:.4s}.orb:nth-child(3){animation-delay:.8s}
+@keyframes float{50%{transform:translateY(-8px)}}
+
+.msg{display:flex;gap:12px;max-width:900px;animation:pop .35s ease}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}}
+.msg.user{align-self:flex-end;flex-direction:row-reverse}
+.av{width:36px;height:36px;flex:none;border-radius:50%;display:grid;place-items:center;font-family:Orbitron,sans-serif;font-size:12px;font-weight:700;color:#020611;background:var(--c);box-shadow:0 0 14px var(--c)}
+.bubble{background:rgba(12,24,48,.85);border:1px solid color-mix(in srgb,var(--c) 45%,transparent);padding:10px 14px;min-width:0;
+  clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px)}
+.msg.user .bubble{background:rgba(0,229,255,.08)}
+.who{font-size:12px;color:var(--c);font-weight:600;margin-bottom:4px;display:flex;gap:8px;align-items:baseline}
+.who small{color:var(--muted);font-weight:400}
+.body{line-height:1.55;overflow-wrap:anywhere}
+.body p{margin:.4em 0}
+.body pre{background:#020611;border:1px solid rgba(0,229,255,.2);padding:10px;overflow:auto;font-family:'JetBrains Mono',monospace;font-size:13px}
+.body code{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(0,229,255,.08);padding:1px 4px}
+.body pre code{background:none;padding:0}
+.body h4{margin:.6em 0 .3em;color:#fff}
+.body ul{margin:.3em 0;padding-left:1.3em}
+.msg.final .bubble{border-color:var(--cyan);box-shadow:inset 0 0 30px rgba(0,229,255,.12)}
+.sys{align-self:center;font-size:12px;color:var(--muted);border:1px dashed rgba(0,229,255,.25);padding:4px 12px}
+.sys.err{color:var(--danger);border-color:rgba(255,85,119,.4)}
+.typing span{display:inline-block;width:6px;height:6px;margin:0 2px;border-radius:50%;background:var(--c);animation:blink 1s infinite}
+.typing span:nth-child(2){animation-delay:.15s}.typing span:nth-child(3){animation-delay:.3s}
+@keyframes blink{50%{opacity:.2}}
+
+.composer{border-top:1px solid var(--line);padding:12px 20px;background:rgba(4,8,18,.85)}
+.composer .opts{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:8px;font-size:13px;color:var(--muted)}
+.composer .opts select{width:auto;padding:5px 8px}
+.composer .main{display:flex;gap:10px;align-items:flex-end}
+.composer textarea{resize:none;min-height:48px;max-height:180px}
+.status{font-size:12px;color:var(--cyan);min-height:16px;margin-top:6px}
+footer{font-size:11px;color:var(--muted);text-align:center;padding-top:4px}
+
+#micBtn.on{background:rgba(255,85,119,.25);border-color:var(--danger);animation:pulse 1s infinite}
+@keyframes pulse{50%{box-shadow:0 0 18px var(--danger)}}
+.chip.on{background:rgba(0,229,255,.18);border-color:var(--cyan);color:var(--cyan)}
+.msg.speaking .av{animation:talk .6s ease-in-out infinite}
+@keyframes talk{50%{transform:scale(1.15)}}
+#callOverlay{position:fixed;inset:0;z-index:20;background:rgba(2,6,17,.92);display:grid;place-items:center;backdrop-filter:blur(6px)}
+.callBox{text-align:center;padding:30px;min-width:280px}
+.ring{font-size:64px;animation:ring 1.2s ease-in-out infinite;filter:drop-shadow(0 0 20px var(--cyan))}
+@keyframes ring{0%,100%{transform:rotate(0)}20%{transform:rotate(-18deg)}40%{transform:rotate(18deg)}60%{transform:rotate(-10deg)}}
+.callTitle{font-family:Orbitron,sans-serif;color:var(--cyan);letter-spacing:.12em;font-size:20px;margin-top:14px;text-shadow:0 0 14px rgba(0,229,255,.6)}
+.callSub{color:var(--muted);margin-top:6px}
+.reduced *{animation:none!important;transition:none!important}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:860px){
+  .app{grid-template-columns:1fr}
+  aside{position:fixed;inset:57px 0 0 0;z-index:5;background:var(--bg);display:none}
+  aside.open{display:flex}
+  #menuBtn{display:inline-block}
+  .sub{display:none}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header>
+    <button class="chip" id="menuBtn">☰ Setup</button>
+    <div class="logo">AI ROUNDTABLE</div>
+    <div class="sub">Claude · ChatGPT · Gemini, one chat</div>
+    <div class="spacer"></div>
+    <button class="chip" id="voiceBtn" title="AIs read replies out loud">🔇 Voice call: Off</button>
+    <button class="chip" id="copyBtn" title="Copy transcript">Copy chat</button>
+    <button class="chip" id="saveBtn" title="Download transcript">Save .md</button>
+    <button class="chip" id="clearBtn">New chat</button>
+  </header>
+
+  <aside id="side">
+    <div class="panel">
+      <h3>API keys</h3>
+      <label>Anthropic (Claude)</label>
+      <input type="password" id="key_anthropic" placeholder="sk-ant-...">
+      <label>OpenAI (ChatGPT)</label>
+      <input type="password" id="key_openai" placeholder="sk-...">
+      <label>Google (Gemini)</label>
+      <input type="password" id="key_google" placeholder="AIza... or AQ...">
+      <label>OpenRouter (free models, incl. OpenAI gpt-oss)</label>
+      <input type="password" id="key_openrouter" placeholder="sk-or-...">
+      <div class="check"><input type="checkbox" id="rememberKeys"> Remember keys on this device</div>
+      <div class="hint">Keys go only from your browser straight to each AI company. Get them at
+        <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a>,
+        <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com</a> and
+        <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com</a> and
+        <a href="https://openrouter.ai/settings/keys" target="_blank" rel="noopener">openrouter.ai</a> (free, no card).</div>
+      <div style="margin-top:10px"><button class="btn ghost" id="loadModels" style="width:100%">Load model lists</button></div>
+    </div>
+
+    <div class="panel">
+      <h3>Participants</h3>
+      <div id="agents"></div>
+      <div class="row">
+        <select id="addProvider">
+          <option value="anthropic">+ Claude</option>
+          <option value="openai">+ ChatGPT</option>
+          <option value="google">+ Gemini</option>
+          <option value="openrouter">+ GPT-OSS (free, via OpenRouter)</option>
+        </select>
+        <button class="btn ghost" id="addAgent" style="flex:none">Add</button>
+      </div>
+      <div class="hint">They speak in this order each round. You can add the same AI twice (e.g. two Claudes with different jobs).</div>
+    </div>
+
+    <div class="panel">
+      <h3>📱 Phone alerts</h3>
+      <div class="check"><input type="checkbox" id="notifyOn"> Notify my phone when the team finishes</div>
+      <label>Your alert channel (type this in the ntfy app)</label>
+      <div class="row"><input type="text" id="ntfyTopic"><button class="btn ghost" id="copyTopic" style="flex:none">Copy</button></div>
+      <label>App link for your phone</label>
+      <input type="text" id="phoneLink">
+      <div style="margin-top:10px"><button class="btn ghost" id="testNotify" style="width:100%">Send test call to my phone</button></div>
+      <div class="hint">Install the free <b>ntfy</b> app on your phone, tap <b>+</b>, and subscribe to the channel above. When the team finishes, your phone rings with a notification; tap it to hear the update and talk back.</div>
+    </div>
+
+    <div class="panel">
+      <h3>Settings</h3>
+      <label>Your name in the chat</label>
+      <input type="text" id="userName" value="Ryan">
+      <label>Wrap-up writer (combines everything at the end)</label>
+      <select id="leader"></select>
+      <div class="check"><input type="checkbox" id="autoWrap" checked> Write a final combined answer when rounds end</div>
+      <div class="check"><input type="checkbox" id="fast" checked> ⚡ Fast mode (AIs think less, reply quicker &amp; shorter)</div>
+      <div class="check"><input type="checkbox" id="autoListen"> 🎤 In voice call, listen to me again after the team finishes</div>
+      <div class="check"><input type="checkbox" id="reduced"> Reduce motion</div>
+    </div>
+  </aside>
+
+  <main>
+    <div id="log">
+      <div class="empty" id="empty">
+        <div class="orbs"><div class="orb" style="--c:#ff9a5c"></div><div class="orb" style="--c:#3dffa8"></div><div class="orb" style="--c:#6aa8ff"></div></div>
+        <h2>GIVE THE TEAM A TASK</h2>
+        <p>Add your API keys on the left, type a task below, and hit <b>Start</b>. Each AI reads what the others said and builds on it. You can jump in any time, even mid-discussion.</p>
+      </div>
+    </div>
+    <div class="composer">
+      <div class="opts">
+        Mode
+        <select id="mode">
+          <option value="collab">Collaborate (build one answer together)</option>
+          <option value="debate">Debate (challenge each other)</option>
+          <option value="brainstorm">Brainstorm (lots of ideas)</option>
+          <option value="review">Build &amp; review (one makes, others critique)</option>
+        </select>
+        Rounds
+        <select id="rounds"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>6</option><option>8</option></select>
+      </div>
+      <div class="main">
+        <textarea id="input" placeholder="e.g. Plan a 7-day Roblox content schedule for my channel… (Enter to send, Shift+Enter for new line)"></textarea>
+        <button class="btn ghost" id="micBtn" title="Talk instead of typing" style="flex:none">🎤</button>
+        <button class="btn" id="sendBtn">Start</button>
+        <button class="btn stop" id="stopBtn" style="display:none">Stop</button>
+      </div>
+      <div class="status" id="status"></div>
+      <footer>Developed by Ryan James Lim</footer>
+    </div>
+  </main>
+</div>
+
+<div id="callOverlay" style="display:none">
+  <div class="callBox">
+    <div class="ring">📞</div>
+    <div class="callTitle">AI TEAM IS CALLING</div>
+    <div class="callSub">Your team has an update for you</div>
+    <div class="row" style="margin-top:22px;gap:14px">
+      <button class="btn stop" id="declineCall">Decline</button>
+      <button class="btn" id="answerCall">Answer</button>
+    </div>
+  </div>
+</div>
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem('rt_'+k); return v==null ? d : JSON.parse(v); }catch{ return d; } },
+  set(k, v){ try{ localStorage.setItem('rt_'+k, JSON.stringify(v)); }catch{} },
+  del(k){ try{ localStorage.removeItem('rt_'+k); }catch{} }
+};
+
+const PROVIDERS = {
+  anthropic: { label:'Claude', color:'#ff9a5c', model:'claude-sonnet-5-5' },
+  openai:    { label:'ChatGPT', color:'#3dffa8', model:'gpt-5.6-luna' },
+  google:    { label:'Gemini', color:'#6aa8ff', model:'gemini-3.8-flash' },
+  openrouter:{ label:'GPT-OSS', color:'#3dffa8', model:'openai/gpt-oss-120b:free' },
+};
+const EXTRA_COLORS = ['#ff5cd6','#ffe45c','#b48cff','#5cfff0','#ff6b6b','#9dff5c'];
+
+let agents = store.get('agents', null) || [
+  { id: uid(), provider:'anthropic', name:'Claude', model:PROVIDERS.anthropic.model, color:PROVIDERS.anthropic.color, on:true },
+  { id: uid(), provider:'openai', name:'ChatGPT', model:PROVIDERS.openai.model, color:PROVIDERS.openai.color, on:true },
+  { id: uid(), provider:'google', name:'Gemini', model:PROVIDERS.google.model, color:PROVIDERS.google.color, on:true },
+];
+let modelLists = { anthropic:[], openai:[], google:[], openrouter:[] };
+let transcript = [];   // {who, agentId|null, text, kind:'user'|'agent'|'final'}
+let running = false, abortCtl = null;
+
+function uid(){ return Math.random().toString(36).slice(2,9); }
+
+// ---------- keys & settings ----------
+const keyIds = ['anthropic','openai','google','openrouter'];
+const remember = store.get('remember', false);
+$('rememberKeys').checked = remember;
+if (remember) keyIds.forEach(k => $('key_'+k).value = store.get('key_'+k, ''));
+function saveKeys(){
+  const r = $('rememberKeys').checked;
+  store.set('remember', r);
+  keyIds.forEach(k => r ? store.set('key_'+k, $('key_'+k).value.trim()) : store.del('key_'+k));
+}
+keyIds.forEach(k => $('key_'+k).addEventListener('input', saveKeys));
+$('rememberKeys').addEventListener('change', saveKeys);
+const key = p => $('key_'+p).value.trim();
+
+['userName','mode','rounds'].forEach(id => {
+  const v = store.get(id, null); if (v!=null) $(id).value = v;
+  $(id).addEventListener('change', () => store.set(id, $(id).value));
+});
+$('autoWrap').checked = store.get('autoWrap', true);
+$('autoWrap').addEventListener('change', () => store.set('autoWrap', $('autoWrap').checked));
+$('fast').checked = store.get('fast', true);
+$('fast').addEventListener('change', () => store.set('fast', $('fast').checked));
+$('reduced').checked = store.get('reduced', false);
+const applyReduced = () => document.body.classList.toggle('reduced', $('reduced').checked);
+$('reduced').addEventListener('change', () => { store.set('reduced', $('reduced').checked); applyReduced(); });
+applyReduced();
+$('menuBtn').onclick = () => $('side').classList.toggle('open');
+
+// ---------- agents UI ----------
+function saveAgents(){ store.set('agents', agents); renderLeader(); }
+function renderAgents(){
+  const box = $('agents'); box.innerHTML = '';
+  agents.forEach((a, i) => {
+    const el = document.createElement('div');
+    el.className = 'agent'; el.style.setProperty('--c', a.color);
+    el.innerHTML = `
+      <div class="top">
+        <input type="checkbox" ${a.on?'checked':''} title="Include in chat">
+        <span class="dot"></span>
+        <input type="text" value="${esc(a.name)}" title="Name">
+        <button class="x" data-act="up" title="Move up">↑</button>
+        <button class="x" data-act="del" title="Remove">✕</button>
+      </div>
+      <label>${PROVIDERS[a.provider].label} model</label>
+      <input type="text" list="list_${a.provider}" value="${esc(a.model)}">
+      <label>Role / personality (optional)</label>
+      <input type="text" placeholder="e.g. the critic who finds flaws" value="${esc(a.role||'')}">`;
+    const [chk, , nameIn] = el.querySelectorAll('.top > *');
+    const ins = el.querySelectorAll(':scope > input');
+    chk.onchange = () => { a.on = chk.checked; saveAgents(); };
+    nameIn.oninput = () => { a.name = nameIn.value.trim() || PROVIDERS[a.provider].label; saveAgents(); };
+    ins[0].oninput = () => { a.model = ins[0].value.trim(); saveAgents(); };
+    ins[1].oninput = () => { a.role = ins[1].value.trim(); saveAgents(); };
+    el.querySelector('[data-act=del]').onclick = () => { agents.splice(i,1); saveAgents(); renderAgents(); };
+    el.querySelector('[data-act=up]').onclick = () => { if(i>0){ [agents[i-1],agents[i]]=[agents[i],agents[i-1]]; saveAgents(); renderAgents(); } };
+    box.appendChild(el);
+  });
+  renderLeader();
+}
+function renderLeader(){
+  const sel = $('leader'), prev = store.get('leader', null);
+  sel.innerHTML = agents.map(a => `<option value="${a.id}">${esc(a.name)}</option>`).join('');
+  if (prev && agents.some(a=>a.id===prev)) sel.value = prev;
+}
+$('leader').onchange = () => store.set('leader', $('leader').value);
+$('addAgent').onclick = () => {
+  const p = $('addProvider').value;
+  const same = agents.filter(a => a.provider===p).length;
+  const used = new Set(agents.map(a=>a.color));
+  const color = !used.has(PROVIDERS[p].color) ? PROVIDERS[p].color : (EXTRA_COLORS.find(c=>!used.has(c)) || '#ffffff');
+  agents.push({ id:uid(), provider:p, name: PROVIDERS[p].label + (same ? ' ' + (same+1) : ''), model: PROVIDERS[p].model, color, on:true });
+  saveAgents(); renderAgents();
+};
+function renderDatalists(){
+  document.querySelectorAll('datalist').forEach(d => d.remove());
+  keyIds.forEach(p => {
+    const dl = document.createElement('datalist'); dl.id = 'list_'+p;
+    dl.innerHTML = modelLists[p].map(m => `<option value="${esc(m)}">`).join('');
+    document.body.appendChild(dl);
+  });
+}
+renderDatalists(); renderAgents();
+
+// ---------- API calls ----------
+async function http(url, opts){
+  const res = await fetch(url, opts);
+  const txt = await res.text();
+  let data; try { data = JSON.parse(txt); } catch { data = null; }
+  if (!res.ok) {
+    const m = data?.error?.message || data?.error?.type || txt.slice(0,300) || res.statusText;
+    throw new Error(`${res.status}: ${m}`);
+  }
+  return data;
+}
+const anthHeaders = () => ({
+  'x-api-key': key('anthropic'), 'anthropic-version': '2023-06-01',
+  'anthropic-dangerous-direct-browser-access': 'true', 'content-type': 'application/json'
+});
+
+async function callModel(agent, system, userText, signal){
+  const waits = [3000, 8000, 15000];
+  for (let i = 0; ; i++) {
+    try { return await callModelOnce(agent, system, userText, signal); }
+    catch (e) {
+      const busy = /^(429|500|502|503|504|529):/.test(e.message) || /overloaded|high demand/i.test(e.message);
+      if (!busy || i >= waits.length || e.name === 'AbortError') throw e;
+      setStatus(`${agent.name} is busy (server overloaded). Retrying in ${waits[i]/1000}s… (try ${i+2} of ${waits.length+1})`);
+      await new Promise((res, rej) => {
+        const t = setTimeout(res, waits[i]);
+        signal?.addEventListener('abort', () => { clearTimeout(t); rej(Object.assign(new Error('aborted'), { name:'AbortError' })); }, { once:true });
+      });
+    }
+  }
+}
+async function callModelOnce(agent, system, userText, signal){
+  if ($('fast').checked && agent.provider !== 'anthropic') {
+    try { return await callModelRaw(agent, system, userText, signal, true); }
+    catch (e) { if (!/^400:/.test(e.message)) throw e; }
+  }
+  return callModelRaw(agent, system, userText, signal, false);
+}
+async function callModelRaw(agent, system, userText, signal, fast){
+  const p = agent.provider;
+  if (!key(p)) throw new Error(`No ${PROVIDERS[p].label} API key. Add it in Setup.`);
+  if (p === 'anthropic') {
+    const d = await http('https://api.anthropic.com/v1/messages', {
+      method:'POST', headers: anthHeaders(), signal,
+      body: JSON.stringify({ model: agent.model, max_tokens: 2048, system, messages:[{ role:'user', content:userText }] })
+    });
+    return (d.content||[]).filter(b => b.type==='text').map(b => b.text).join('\n');
+  }
+  if (p === 'openai') {
+    const d = await http('https://api.openai.com/v1/chat/completions', {
+      method:'POST', signal,
+      headers: { 'Authorization':'Bearer '+key('openai'), 'Content-Type':'application/json' },
+      body: JSON.stringify({ model: agent.model, messages:[{ role:'system', content:system }, { role:'user', content:userText }], ...(fast ? { reasoning_effort:'low' } : {}) })
+    });
+    return d.choices?.[0]?.message?.content || '';
+  }
+  if (p === 'openrouter') {
+    const d = await http('https://openrouter.ai/api/v1/chat/completions', {
+      method:'POST', signal,
+      headers: { 'Authorization':'Bearer '+key('openrouter'), 'Content-Type':'application/json', 'X-Title':'AI Roundtable' },
+      body: JSON.stringify({ model: agent.model, messages:[{ role:'system', content:system }, { role:'user', content:userText }], ...(fast ? { reasoning:{ effort:'low' } } : {}) })
+    });
+    if (d.error) throw new Error(d.error.code + ': ' + d.error.message);
+    return d.choices?.[0]?.message?.content || '';
+  }
+  if (p === 'google') {
+    const d = await http(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(agent.model)}:generateContent`, {
+      method:'POST', signal,
+      headers: { 'x-goog-api-key': key('google'), 'Content-Type':'application/json' },
+      body: JSON.stringify({ systemInstruction:{ parts:[{ text:system }] }, contents:[{ role:'user', parts:[{ text:userText }] }], ...(fast ? { generationConfig:{ thinkingConfig:{ thinkingLevel:'low' } } } : {}) })
+    });
+    const parts = d.candidates?.[0]?.content?.parts || [];
+    const out = parts.filter(x => !x.thought && x.text).map(x => x.text).join('');
+    if (!out && d.candidates?.[0]?.finishReason) throw new Error('Gemini returned no text ('+d.candidates[0].finishReason+')');
+    return out;
+  }
+}
+
+$('loadModels').onclick = async () => {
+  setStatus('Loading model lists…');
+  const jobs = [];
+  if (key('anthropic')) jobs.push(http('https://api.anthropic.com/v1/models?limit=100', { headers: anthHeaders() })
+    .then(d => modelLists.anthropic = d.data.map(m => m.id)).catch(e => sys('Claude models: '+e.message, true)));
+  if (key('openai')) jobs.push(http('https://api.openai.com/v1/models', { headers:{ Authorization:'Bearer '+key('openai') } })
+    .then(d => modelLists.openai = d.data.map(m => m.id).filter(id => /gpt|chat|^o\d/i.test(id) && !/audio|realtime|image|tts|transcribe|embed|search|moderation/i.test(id)).sort().reverse())
+    .catch(e => sys('OpenAI models: '+e.message, true)));
+  if (key('google')) jobs.push(http('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200', { headers:{ 'x-goog-api-key': key('google') } })
+    .then(d => modelLists.google = d.models.filter(m => (m.supportedGenerationMethods||[]).includes('generateContent')).map(m => m.name.replace('models/','')))
+    .catch(e => sys('Gemini models: '+e.message, true)));
+  if (key('openrouter')) jobs.push(http('https://openrouter.ai/api/v1/models', { headers:{ Authorization:'Bearer '+key('openrouter') } })
+    .then(d => modelLists.openrouter = d.data.map(m => m.id).filter(id => id.endsWith(':free')).sort())
+    .catch(e => sys('OpenRouter models: '+e.message, true)));
+  if (!jobs.length) { setStatus('Add at least one API key first.'); return; }
+  await Promise.all(jobs);
+  renderDatalists();
+  setStatus(`Models loaded: Claude ${modelLists.anthropic.length}, OpenAI ${modelLists.openai.length}, Gemini ${modelLists.google.length}, OpenRouter free ${modelLists.openrouter.length}. Click a model box to pick one.`);
+};
+
+// ---------- prompts ----------
+const MODES = {
+  collab: 'Work as a team to produce the best possible result for the host. Divide the work sensibly, build on each other, and fix each other\'s mistakes.',
+  debate: 'This is a friendly debate. Take clear positions, challenge weak arguments from the others with reasons, and change your mind only when convinced.',
+  brainstorm: 'This is a brainstorm. Contribute fresh ideas that are different from what has already been said, and riff on the best ideas from others.',
+  review: 'The first speaker drafts the solution; the others review it critically (bugs, gaps, better approaches) and the drafter revises. Be specific.'
+};
+function systemFor(agent, active){
+  const others = active.filter(a => a.id !== agent.id).map(a => `${a.name} (${PROVIDERS[a.provider].label})`).join(', ') || 'none';
+  const host = $('userName').value.trim() || 'the host';
+  return `You are ${agent.name}, an AI assistant in a live group chat called "AI Roundtable". The other AI participants are: ${others}. The human host is ${host}, who gives the task and may jump in at any time.
+${agent.role ? `Your role in this chat: ${agent.role}.\n` : ''}${MODES[$('mode').value]}
+Rules:
+- Read the whole chat. Respond to what others actually said; address them by name. Don't just repeat points already made.
+- If the host has written something new, prioritise it.
+- Keep each message focused (${$('fast').checked ? 'roughly under 120 words, short and punchy' : 'roughly under 250 words'}) unless the task needs code or a longer deliverable.
+- Speak only as yourself. Never write lines for other participants, and don't start your message with your own name.
+- If the task is fully handled and you have nothing useful to add, reply with exactly: [PASS]`;
+}
+function transcriptText(){
+  const host = $('userName').value.trim() || 'Host';
+  return transcript.map(m => `### ${m.kind==='user' ? host+' (host)' : m.who}:\n${m.text}`).join('\n\n');
+}
+
+// ---------- chat loop ----------
+async function runRounds(){
+  const on = agents.filter(a => a.on);
+  const active = on.filter(a => key(a.provider));
+  const skipped = on.filter(a => !key(a.provider));
+  if (skipped.length) sys(`Skipping ${skipped.map(a => a.name).join(', ')}: no API key yet.`);
+  if (!active.length) { sys('No participant has an API key yet. Add a key in Setup.', true); return; }
+  running = true; abortCtl = new AbortController(); toggleRunning();
+  const rounds = +$('rounds').value;
+  let completed = false;
+  try {
+    for (let r = 1; r <= rounds && running; r++) {
+      let passes = 0;
+      for (const a of active) {
+        if (!running) break;
+        const ok = await agentTurn(a, active, `Group chat so far:\n\n${transcriptText()}\n\n---\nIt's your turn, ${a.name} (round ${r} of ${rounds}). Write your next message.`, 'agent');
+        if (ok === 'pass') passes++;
+      }
+      if (passes === active.length) { sys('Everyone passed: the team thinks the task is done.'); break; }
+    }
+    if (running) completed = true;
+    if (running && $('autoWrap').checked) {
+      const leader = active.find(a => a.id === $('leader').value) || active[0];
+      completed = true;
+      await agentTurn(leader, active, `Group chat so far:\n\n${transcriptText()}\n\n---\nThe discussion is over. As ${leader.name}, write the FINAL combined answer to the host's task, merging the best contributions from everyone and resolving disagreements. Output only the final answer, ready to use. Do not reply with [PASS].`, 'final');
+    }
+  } finally {
+    running = false; abortCtl = null; toggleRunning(); setStatus('');
+    if (!speakQueue) maybeAutoListen();
+  }
+  if (completed && $('notifyOn').checked && transcript.some(m => m.kind !== 'user')) {
+    if (await notifyPhone(buildBrief())) sys('📱 Update sent to your phone.');
+  }
+}
+async function agentTurn(a, active, prompt, kind){
+  const t = typing(a);
+  setStatus(`${a.name} is thinking…`);
+  try {
+    let text = (await callModel(a, systemFor(a, active), prompt, abortCtl.signal)).trim();
+    text = text.replace(new RegExp('^\\s*(\\*\\*)?' + escRe(a.name) + '(\\*\\*)?\\s*:\\s*', 'i'), '');
+    t.remove();
+    if (/^\[PASS\]\.?$/i.test(text) || !text) { sys(`${a.name} passed.`); return 'pass'; }
+    transcript.push({ who:a.name, agentId:a.id, text, kind });
+    bubble(a, text, kind);
+    return 'ok';
+  } catch (e) {
+    t.remove();
+    if (e.name === 'AbortError') return 'stop';
+    sys(`${a.name}: ${e.message}`, true);
+    return 'err';
+  }
+}
+
+function send(){
+  const text = $('input').value.trim();
+  if (!text) return;
+  $('input').value = ''; autoGrow();
+  transcript.push({ who: $('userName').value.trim() || 'Host', agentId:null, text, kind:'user' });
+  userBubble(text);
+  if (!running) runRounds();
+  else setStatus('Got it. The next speaker will see your message.');
+}
+$('sendBtn').onclick = send;
+$('input').addEventListener('keydown', e => { if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); send(); } });
+$('input').addEventListener('input', autoGrow);
+function autoGrow(){ const t=$('input'); t.style.height='auto'; t.style.height=Math.min(t.scrollHeight,180)+'px'; }
+$('stopBtn').onclick = () => { running = false; abortCtl?.abort(); stopSpeaking(); sys('Stopped.'); };
+function toggleRunning(){
+  $('stopBtn').style.display = running ? '' : 'none';
+  $('sendBtn').textContent = running ? 'Jump in' : (transcript.length ? 'Send' : 'Start');
+}
+
+// ---------- voice call ----------
+let voiceOn = store.get('voiceOn', false), voices = [], speakQueue = 0;
+$('autoListen').checked = store.get('autoListen', false);
+$('autoListen').addEventListener('change', () => store.set('autoListen', $('autoListen').checked));
+function loadVoices(){
+  const all = (window.speechSynthesis ? speechSynthesis.getVoices() : []);
+  const en = all.filter(v => /^en/i.test(v.lang));
+  voices = (en.length ? en : all).sort((a,b) => (/google|microsoft|natural/i.test(b.name)) - (/google|microsoft|natural/i.test(a.name)));
+}
+if (window.speechSynthesis) { loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
+function renderVoiceBtn(){
+  $('voiceBtn').textContent = voiceOn ? '🔊 Voice call: On' : '🔇 Voice call: Off';
+  $('voiceBtn').classList.toggle('on', voiceOn);
+}
+renderVoiceBtn();
+$('voiceBtn').onclick = () => {
+  if (!window.speechSynthesis) { setStatus('This browser cannot speak out loud. Use Chrome.'); return; }
+  voiceOn = !voiceOn; store.set('voiceOn', voiceOn); renderVoiceBtn();
+  if (!voiceOn) stopSpeaking();
+  else { const u = new SpeechSynthesisUtterance('Voice call on.'); u.rate = 1.1; speechSynthesis.speak(u); }
+};
+function stopSpeaking(){ try { speechSynthesis.cancel(); } catch {} speakQueue = 0; document.querySelectorAll('.msg.speaking').forEach(m => m.classList.remove('speaking')); }
+function plainText(t){
+  return t.replace(/```[\s\S]*?```/g, ' (code shown on screen) ')
+          .replace(/`([^`]+)`/g, '$1').replace(/[*_#>]+/g, '').replace(/\[PASS\]/g, '')
+          .replace(/https?:\/\/\S+/g, 'a link').replace(/\s+/g, ' ').trim();
+}
+function speak(agentIndex, text, el){
+  if (!voiceOn || !window.speechSynthesis) return;
+  const v = voices.length ? voices[agentIndex % voices.length] : null;
+  const pitches = [1, 0.85, 1.2, 0.95, 1.1, 0.75];
+  const chunks = plainText(text).match(/[^.!?]+[.!?]*\s*/g) || [];
+  let buf = '', parts = [];
+  for (const c of chunks) { if ((buf + c).length > 180) { if (buf) parts.push(buf); buf = c; } else buf += c; }
+  if (buf.trim()) parts.push(buf);
+  parts.forEach((p, i) => {
+    const u = new SpeechSynthesisUtterance(p);
+    if (v) u.voice = v;
+    u.pitch = pitches[agentIndex % pitches.length]; u.rate = 1.05;
+    speakQueue++;
+    if (i === 0) u.onstart = () => el?.classList.add('speaking');
+    u.onend = u.onerror = () => {
+      speakQueue = Math.max(0, speakQueue - 1);
+      if (i === parts.length - 1) el?.classList.remove('speaking');
+      if (!speakQueue && !running) maybeAutoListen();
+    };
+    speechSynthesis.speak(u);
+  });
+}
+function maybeAutoListen(){ if (voiceOn && $('autoListen').checked && !listening) startListening(); }
+
+// microphone
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null, listening = false;
+function startListening(){
+  if (!SR) { setStatus('Voice input needs Google Chrome.'); return; }
+  stopSpeaking();
+  rec = new SR(); rec.lang = 'en-US'; rec.interimResults = true; rec.continuous = false;
+  let finalText = '';
+  rec.onresult = e => {
+    let interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) finalText += e.results[i][0].transcript; else interim += e.results[i][0].transcript;
+    }
+    $('input').value = (finalText + interim).trim(); autoGrow();
+  };
+  rec.onerror = e => { setStatus(e.error === 'not-allowed' ? 'Microphone blocked. Click the 🔒/ⓘ icon left of the address bar and allow the microphone.' : 'Mic error: ' + e.error); };
+  rec.onend = () => {
+    listening = false; $('micBtn').classList.remove('on');
+    if ($('input').value.trim()) { setStatus(''); send(); }
+    else if (!$('status').textContent.startsWith('Mic')) setStatus('');
+  };
+  try { rec.start(); listening = true; $('micBtn').classList.add('on'); setStatus('🎤 Listening… talk now. It sends when you stop.'); }
+  catch (e) { setStatus('Could not start the mic: ' + e.message); }
+}
+$('micBtn').onclick = () => { if (listening) rec?.stop(); else startListening(); };
+
+// ---------- phone alerts ----------
+const randId = () => Array.from(crypto.getRandomValues(new Uint8Array(8)), b => 'abcdefghijkmnpqrstuvwxyz23456789'[b % 32]).join('');
+$('ntfyTopic').value = store.get('ntfyTopic', null) || ('ryme-ai-' + randId());
+store.set('ntfyTopic', $('ntfyTopic').value);
+$('ntfyTopic').addEventListener('change', () => store.set('ntfyTopic', $('ntfyTopic').value.trim()));
+$('phoneLink').value = store.get('phoneLink', 'https://rjlim0619-dev.github.io/ai-roundtable/');
+$('phoneLink').addEventListener('change', () => store.set('phoneLink', $('phoneLink').value.trim()));
+$('notifyOn').checked = store.get('notifyOn', false);
+$('notifyOn').addEventListener('change', () => store.set('notifyOn', $('notifyOn').checked));
+$('copyTopic').onclick = async () => { try { await navigator.clipboard.writeText($('ntfyTopic').value); setStatus('Channel copied.'); } catch { setStatus('Copy failed; select it and press Ctrl+C.'); } };
+
+function buildBrief(){
+  const fin = [...transcript].reverse().find(m => m.kind === 'final');
+  let text = fin ? fin.text : transcript.filter(m => m.kind === 'agent').slice(-3).map(m => m.who + ': ' + m.text).join('\n\n');
+  const task = transcript.find(m => m.kind === 'user');
+  if (task) text = 'About your task "' + task.text.slice(0, 120) + '". ' + text;
+  return text.slice(0, 900);
+}
+async function notifyPhone(brief, title){
+  const topic = $('ntfyTopic').value.trim();
+  if (!topic) { setStatus('Set an alert channel first.'); return false; }
+  const link = $('phoneLink').value.trim().replace(/#.*$/, '');
+  try {
+    const res = await fetch('https://ntfy.sh/', { method:'POST', headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({ topic, title: title || '📞 AI Team is calling', priority: 5, tags:['telephone_receiver'],
+        message: plainText(brief).slice(0, 180) + '… Tap to answer.',
+        click: link + '#brief=' + encodeURIComponent(brief) }) });
+    if (!res.ok) throw new Error(res.status + ' ' + (await res.text()).slice(0,120));
+    return true;
+  } catch (e) { sys('Phone alert failed: ' + e.message, true); return false; }
+}
+$('testNotify').onclick = async () => {
+  if (await notifyPhone('This is a test call from your AI Roundtable team. Everything is connected. Next time we finish a task, we will call you with the update.', '📞 Test call from AI Team')) setStatus('Test sent. Check your phone.');
+};
+// incoming call (opened from the phone notification)
+(function checkIncoming(){
+  const m = location.hash.match(/^#brief=(.*)$/s);
+  if (!m) return;
+  let brief = ''; try { brief = decodeURIComponent(m[1]); } catch { return; }
+  history.replaceState(null, '', location.pathname + location.search);
+  $('callOverlay').style.display = 'grid';
+  $('declineCall').onclick = () => { $('callOverlay').style.display = 'none'; };
+  $('answerCall').onclick = () => {
+    $('callOverlay').style.display = 'none';
+    voiceOn = true; store.set('voiceOn', true); renderVoiceBtn();
+    $('autoListen').checked = true;
+    const teamAgent = { id:'team', name:'AI Team', model:'update call', color:'#00e5ff' };
+    const intro = 'Hi Ryan, it\'s your AI team. Here is the update. ' + brief + ' What do you want us to do next?';
+    transcript.push({ who:'AI Team', agentId:'team', text: intro, kind:'agent' });
+    bubble(teamAgent, intro, 'agent');
+    toggleRunning();
+  };
+})();
+
+// ---------- rendering ----------
+function hideEmpty(){ const e=$('empty'); if(e) e.remove(); }
+function scroll(){ const l=$('log'); l.scrollTop = l.scrollHeight; }
+function initials(n){ return n.split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase(); }
+function bubble(a, text, kind){
+  hideEmpty();
+  const el = document.createElement('div');
+  el.className = 'msg' + (kind==='final' ? ' final' : '');
+  el.style.setProperty('--c', a.color);
+  el.innerHTML = `<div class="av">${esc(initials(a.name))}</div><div class="bubble"><div class="who">${esc(a.name)}${kind==='final'?' · FINAL ANSWER':''} <small>${esc(a.model)}</small></div><div class="body">${md(text)}</div></div>`;
+  $('log').appendChild(el); scroll();
+  speak(Math.max(0, agents.findIndex(x => x.id === a.id)), (kind==='final' ? 'Final answer. ' : '') + text, el);
+}
+function userBubble(text){
+  hideEmpty();
+  const el = document.createElement('div');
+  el.className = 'msg user'; el.style.setProperty('--c', '#00e5ff');
+  const n = $('userName').value.trim() || 'You';
+  el.innerHTML = `<div class="av">${esc(initials(n))}</div><div class="bubble"><div class="who">${esc(n)}</div><div class="body">${md(text)}</div></div>`;
+  $('log').appendChild(el); scroll();
+}
+function typing(a){
+  hideEmpty();
+  const el = document.createElement('div');
+  el.className = 'msg'; el.style.setProperty('--c', a.color);
+  el.innerHTML = `<div class="av">${esc(initials(a.name))}</div><div class="bubble"><div class="who">${esc(a.name)}</div><div class="typing"><span></span><span></span><span></span></div></div>`;
+  $('log').appendChild(el); scroll(); return el;
+}
+function sys(text, err){
+  hideEmpty();
+  const el = document.createElement('div');
+  el.className = 'sys' + (err ? ' err' : ''); el.textContent = text;
+  $('log').appendChild(el); scroll();
+}
+function setStatus(t){ $('status').textContent = t; }
+
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escRe(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+function md(src){
+  const blocks = [];
+  let s = src.replace(/```[\w-]*\n?([\s\S]*?)```/g, (_, code) => { blocks.push(code); return `\u0000${blocks.length-1}\u0000`; });
+  s = esc(s)
+    .replace(/`([^`\n]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*\n]+)\*\*/g, '<b>$1</b>')
+    .replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<i>$2</i>');
+  const out = []; let list = null;
+  for (const line of s.split('\n')) {
+    const li = line.match(/^\s*(?:[-*•]|\d+[.)])\s+(.*)/);
+    if (li) { if (!list) { list = []; } list.push(`<li>${li[1]}</li>`); continue; }
+    if (list) { out.push(`<ul>${list.join('')}</ul>`); list = null; }
+    const h = line.match(/^#{1,6}\s+(.*)/);
+    if (h) out.push(`<h4>${h[1]}</h4>`);
+    else if (/^\u0000\d+\u0000$/.test(line.trim())) out.push(line.trim());
+    else if (line.trim()) out.push(`<p>${line}</p>`);
+  }
+  if (list) out.push(`<ul>${list.join('')}</ul>`);
+  return out.join('').replace(/\u0000(\d+)\u0000/g, (_, i) => `<pre><code>${esc(blocks[+i].replace(/\n$/,''))}</code></pre>`);
+}
+
+// ---------- export / reset ----------
+function exportMd(){
+  const host = $('userName').value.trim() || 'Host';
+  return `# AI Roundtable transcript\n\n` + transcript.map(m => `**${m.kind==='user' ? host : m.who}${m.kind==='final'?' (final answer)':''}:**\n\n${m.text}`).join('\n\n---\n\n');
+}
+$('copyBtn').onclick = async () => {
+  try { await navigator.clipboard.writeText(exportMd()); setStatus('Transcript copied.'); }
+  catch { setStatus('Copy failed in this browser.'); }
+};
+$('saveBtn').onclick = () => {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([exportMd()], { type:'text/markdown' }));
+  a.download = 'ai-roundtable-' + new Date().toISOString().slice(0,16).replace(/[:T]/g,'-') + '.md';
+  a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+};
+$('clearBtn').onclick = () => {
+  if (running) { running = false; abortCtl?.abort(); }
+  transcript = []; stopSpeaking();
+  $('log').innerHTML = '';
+  sys('New chat started. Give the team a task.');
+  toggleRunning();
+};
+})();
+</script>
+</body>
+</html>
