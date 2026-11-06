@@ -457,7 +457,8 @@ Rules:
 - If the host has written something new, prioritise it.
 - Keep each message focused (${$('fast').checked ? 'roughly under 120 words, short and punchy' : 'roughly under 250 words'}) unless the task needs code or a longer deliverable.
 - Speak only as yourself. Never write lines for other participants, and don't start your message with your own name.
-- If the task is fully handled and you have nothing useful to add, reply with exactly: [PASS]`;
+- If the task is fully handled and you have nothing useful to add, reply with exactly: [PASS]
+- About this app: it is "AI Roundtable", built by ${host}. The app itself can read your replies out loud (voice call mode) and, when its phone-alert setting is on, automatically sends ${host} a phone notification with the final answer after the discussion ends. You never need to send notifications yourself. If ${host} asks about calls or notifications, tell him to tick "Notify my phone when the team finishes" in the Phone alerts panel.${$('notifyOn').checked ? ' Phone alerts are currently ON.' : ' Phone alerts are currently OFF.'}`;
 }
 function transcriptText(){
   const host = $('userName').value.trim() || 'Host';
