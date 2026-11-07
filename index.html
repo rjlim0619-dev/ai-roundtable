@@ -99,27 +99,6 @@ footer{font-size:11px;color:var(--muted);text-align:center;padding-top:4px}
 .chip.on{background:rgba(0,229,255,.18);border-color:var(--cyan);color:var(--cyan)}
 .msg.speaking .av{animation:talk .6s ease-in-out infinite}
 @keyframes talk{50%{transform:scale(1.15)}}
-#callOverlay{position:fixed;inset:0;z-index:20;background:radial-gradient(120% 80% at 50% 0%,#1b2a44,#05070d 70%);color:#fff;font-family:-apple-system,'SF Pro Display',Inter,system-ui,sans-serif}
-.cs{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:70px 24px 60px}
-.cs-top{text-align:center}
-.cs-name{font-size:34px;font-weight:500;letter-spacing:.3px;margin-top:6px}
-.cs-sub{color:#aeb6c4;font-size:17px;margin-top:6px}
-.cs-timer{color:#c9d1dc;font-size:17px;font-variant-numeric:tabular-nums}
-.cs-caption{color:#aeb6c4;font-size:15px;margin:14px auto 0;max-width:340px;line-height:1.45;min-height:44px}
-.cs-avatar{width:120px;height:120px;border-radius:50%;display:grid;place-items:center;font-size:54px;font-weight:600;background:linear-gradient(160deg,#5b6b86,#2c3648);box-shadow:0 0 0 0 rgba(0,229,255,.35);animation:csPulse 1.8s ease-out infinite}
-@keyframes csPulse{70%{box-shadow:0 0 0 26px rgba(0,229,255,0)}100%{box-shadow:0 0 0 0 rgba(0,229,255,0)}}
-.cs-answer{display:flex;justify-content:space-between;width:100%;max-width:330px}
-.cs-grid{display:grid;grid-template-columns:repeat(3,auto);gap:26px 34px;justify-content:center}
-.cs-btnwrap{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:13px;color:#e8ecf2}
-.cs-round{width:76px;height:76px;border-radius:50%;border:none;cursor:pointer;font-size:28px;color:#fff;background:rgba(255,255,255,.16);backdrop-filter:blur(10px);display:grid;place-items:center;transition:transform .1s}
-.cs-round:active{transform:scale(.94)}
-.cs-round.on{background:#f2f4f7;color:#111}
-.cs-round.red{background:#ff3b30}
-.cs-round.green{background:#34c759;animation:csBounce 1.2s ease-in-out infinite}
-.cs-round svg{display:block}
-#declineCall svg,.cs-round.end svg{transform:rotate(135deg)}
-@keyframes csBounce{50%{transform:translateY(-6px)}}
-#csReturn{position:fixed;top:0;left:0;right:0;z-index:19;background:#34c759;color:#fff;border:none;padding:8px;font-weight:600;cursor:pointer}
 .reduced *{animation:none!important;transition:none!important}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 @media (max-width:860px){
@@ -138,8 +117,7 @@ footer{font-size:11px;color:var(--muted);text-align:center;padding-top:4px}
     <div class="logo">AI ROUNDTABLE</div>
     <div class="sub">Claude · ChatGPT · Gemini, one chat</div>
     <div class="spacer"></div>
-    <button class="chip" id="callNowBtn" title="Start a voice call with your AI team">📞 Call Head AI</button>
-    <button class="chip" id="voiceBtn" title="AIs read replies out loud">🔇 Voice call: Off</button>
+    <button class="chip" id="voiceBtn" title="AIs read replies out loud">🔇 Voice: Off</button>
     <button class="chip" id="copyBtn" title="Copy transcript">Copy chat</button>
     <button class="chip" id="saveBtn" title="Download transcript">Save .md</button>
     <button class="chip" id="clearBtn">New chat</button>
@@ -181,52 +159,6 @@ footer{font-size:11px;color:var(--muted);text-align:center;padding-top:4px}
     </div>
 
     <div class="panel">
-      <h3>📱 Phone alerts</h3>
-      <div class="check"><input type="checkbox" id="notifyOn"> Notify my phone when the team finishes</div>
-      <label>Ring my phone</label>
-      <select id="ringTimes"><option value="1">1 time</option><option value="3">3 times</option><option value="5" selected>5 times (like a real call)</option><option value="8">8 times</option></select>
-      <label>Your alert channel (type this in the ntfy app)</label>
-      <div class="row"><input type="text" id="ntfyTopic"><button class="btn ghost" id="copyTopic" style="flex:none">Copy</button></div>
-      <label>App link for your phone</label>
-      <input type="text" id="phoneLink">
-      <div style="margin-top:10px"><button class="btn ghost" id="testNotify" style="width:100%">Send test call to my phone</button></div>
-      <div class="hint">Install the free <b>ntfy</b> app on your phone, tap <b>+</b>, and subscribe to the channel above. When the team finishes, your phone rings with a notification; tap it to hear the update and talk back.</div>
-    </div>
-
-    <div class="panel">
-      <h3>🚨 Ringing alerts (Pushover)</h3>
-      <div class="check"><input type="checkbox" id="poOn"> Ring until I acknowledge when the team finishes</div>
-      <label>Your User Key (from pushover.net)</label>
-      <input type="password" id="poUser" placeholder="u...">
-      <label>App API Token (from pushover.net/apps)</label>
-      <input type="password" id="poToken" placeholder="a...">
-      <label>Ringtone (Pushover sound name)</label>
-      <input type="text" id="poSound">
-      <div style="margin-top:10px"><button class="btn ghost" id="poTest" style="width:100%">Test ringing alert</button></div>
-      <div class="hint">Repeats a loud alert every 30 seconds for 5 minutes until you tap <b>Acknowledge</b> in the Pushover app.</div>
-    </div>
-
-    <div class="panel">
-      <h3>📲 Real ringing call (Telegram, free)</h3>
-      <div class="check"><input type="checkbox" id="tgOn"> Call me on Telegram when the team finishes</div>
-      <label>Your Telegram username</label>
-      <input type="text" id="tgUser" placeholder="@yourname or +639XXXXXXXXX">
-      <div style="margin-top:10px"><button class="btn ghost" id="tgTest" style="width:100%">Test Telegram call</button></div>
-      <div class="hint">First, in Telegram send <b>/start</b> to <b>@CallMeBot_txtbot</b> so it's allowed to call you. Your phone rings like a real call and Head AI reads the update (short version) when you answer.</div>
-    </div>
-
-    <div class="panel">
-      <h3>☎️ Real phone call (Twilio)</h3>
-      <div class="check"><input type="checkbox" id="callOn"> Call my real phone when the team finishes</div>
-      <label>Your call link (Twilio Function URL)</label>
-      <input type="text" id="callUrl" placeholder="https://....twil.io/call">
-      <label>Call password (the CALL_SECRET you set in Twilio)</label>
-      <input type="password" id="callSecret">
-      <div style="margin-top:10px"><button class="btn ghost" id="callTest" style="width:100%">Test real call</button></div>
-      <div class="hint">Your phone number is stored only in your Twilio account, never in this app.</div>
-    </div>
-
-    <div class="panel">
       <h3>Settings</h3>
       <label>Your name in the chat</label>
       <input type="text" id="userName" value="Ryan">
@@ -234,7 +166,7 @@ footer{font-size:11px;color:var(--muted);text-align:center;padding-top:4px}
       <select id="leader"></select>
       <div class="check"><input type="checkbox" id="autoWrap" checked> Write a final combined answer when rounds end</div>
       <div class="check"><input type="checkbox" id="fast" checked> ⚡ Fast mode (AIs think less, reply quicker &amp; shorter)</div>
-      <div class="check"><input type="checkbox" id="autoListen"> 🎤 In voice call, listen to me again after the team finishes</div>
+      <div class="check"><input type="checkbox" id="autoListen"> 🎤 In voice mode, listen to me again after the team finishes</div>
       <div class="check"><input type="checkbox" id="reduced"> Reduce motion</div>
     </div>
   </aside>
@@ -271,35 +203,6 @@ footer{font-size:11px;color:var(--muted);text-align:center;padding-top:4px}
   </main>
 </div>
 
-<div id="callOverlay" style="display:none">
-  <div class="cs incoming" id="csIncoming">
-    <div class="cs-top">
-      <div class="cs-name">Head AI</div>
-      <div class="cs-sub">AI Team · mobile</div>
-    </div>
-    <div class="cs-avatar">H</div>
-    <div class="cs-answer">
-      <div class="cs-btnwrap"><button class="cs-round red" id="declineCall" aria-label="Decline"><svg viewBox="0 0 24 24" width="34" height="34" fill="currentColor"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z"/></svg></button><span>Decline</span></div>
-      <div class="cs-btnwrap"><button class="cs-round green" id="answerCall" aria-label="Accept"><svg viewBox="0 0 24 24" width="34" height="34" fill="currentColor"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z"/></svg></button><span>Accept</span></div>
-    </div>
-  </div>
-  <div class="cs active" id="csActive" style="display:none">
-    <div class="cs-top">
-      <div class="cs-timer" id="csTimer">00:00</div>
-      <div class="cs-name">Head AI</div>
-      <div class="cs-caption" id="csCaption">Connecting…</div>
-    </div>
-    <div class="cs-grid">
-      <div class="cs-btnwrap"><button class="cs-round on" id="csSpeaker"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" ><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg></button><span>Speaker</span></div>
-      <div class="cs-btnwrap"><button class="cs-round" id="csChat"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" ><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1.1-4.3A8 8 0 1 1 21 12z"/></svg></button><span>Chat</span></div>
-      <div class="cs-btnwrap"><button class="cs-round" id="csMute"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" ><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg></button><span>Mute</span></div>
-      <div class="cs-btnwrap"><button class="cs-round" id="csTalk"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" ><path d="M12 3a9 9 0 1 0 0 18"/><path d="M16 8.5a5 5 0 0 1 0 7"/><path d="M19 6a9 9 0 0 1 0 12"/><circle cx="9" cy="12" r="2.2"/></svg></button><span>Talk</span></div>
-      <div class="cs-btnwrap"><button class="cs-round red end" id="csEnd"><svg viewBox="0 0 24 24" width="34" height="34" fill="currentColor"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z"/></svg></button><span>End</span></div>
-      <div class="cs-btnwrap"><button class="cs-round" id="csMin"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" ><path d="m6 9 6 6 6-6"/></svg></button><span>Hide</span></div>
-    </div>
-  </div>
-</div>
-<button id="csReturn" style="display:none">📞 Return to call · Head AI</button>
 <script>
 (() => {
 const $ = id => document.getElementById(id);
@@ -527,7 +430,7 @@ Rules:
 - Keep each message focused (${$('fast').checked ? 'roughly under 120 words, short and punchy' : 'roughly under 250 words'}) unless the task needs code or a longer deliverable.
 - Speak only as yourself. Never write lines for other participants, and don't start your message with your own name.
 - If the task is fully handled and you have nothing useful to add, reply with exactly: [PASS]
-- About this app: it is "AI Roundtable", built by ${host}. The app itself can read your replies out loud (voice call mode) and, when its phone-alert setting is on, automatically sends ${host} a phone notification with the final answer after the discussion ends. You never need to send notifications yourself. If ${host} asks about calls or notifications, tell him to tick "Notify my phone when the team finishes" in the Phone alerts panel.${$('notifyOn').checked ? ' Phone alerts are currently ON.' : ' Phone alerts are currently OFF.'}`;
+- About this app: it is "AI Roundtable", built by ${host}. It can read your replies out loud (voice mode). It does not call or notify anyone's phone.`;
 }
 function transcriptText(){
   const host = $('userName').value.trim() || 'Host';
@@ -563,15 +466,6 @@ async function runRounds(){
   } finally {
     running = false; abortCtl = null; toggleRunning(); setStatus('');
     if (!speakQueue) maybeAutoListen();
-  }
-  if (completed && $('notifyOn').checked && transcript.some(m => m.kind !== 'user')) {
-    sys('📱 Calling your phone…');
-    if (await ringPhone(buildBrief())) sys('📱 Update sent to your phone.');
-  }
-  if (completed && transcript.some(m => m.kind !== 'user')) {
-    if ($('poOn').checked && await pushoverAlert(buildBrief())) sys('🚨 Ringing alert sent (repeats until you acknowledge).');
-    if ($('callOn').checked && await realCall(buildBrief())) sys('☎️ Calling your real phone now.');
-    if ($('tgOn').checked && await telegramCall(buildBrief())) sys('📲 Head AI is calling you on Telegram.');
   }
 }
 async function agentTurn(a, active, prompt, kind){
@@ -623,7 +517,7 @@ function loadVoices(){
 }
 if (window.speechSynthesis) { loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
 function renderVoiceBtn(){
-  $('voiceBtn').textContent = voiceOn ? '🔊 Voice call: On' : '🔇 Voice call: Off';
+  $('voiceBtn').textContent = voiceOn ? '🔊 Voice: On' : '🔇 Voice: Off';
   $('voiceBtn').classList.toggle('on', voiceOn);
 }
 renderVoiceBtn();
@@ -661,7 +555,7 @@ function speak(agentIndex, text, el){
     speechSynthesis.speak(u);
   });
 }
-function maybeAutoListen(){ if (inCall && callMuted) return; if ((voiceOn || inCall) && $('autoListen').checked && !listening) { if (inCall) setCaption('Your turn. Listening…'); startListening(); } }
+function maybeAutoListen(){ if (voiceOn && $('autoListen').checked && !listening) startListening(); }
 
 // microphone
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -689,178 +583,6 @@ function startListening(){
 }
 $('micBtn').onclick = () => { if (listening) rec?.stop(); else startListening(); };
 
-// ---------- phone alerts ----------
-const randId = () => Array.from(crypto.getRandomValues(new Uint8Array(8)), b => 'abcdefghijkmnpqrstuvwxyz23456789'[b % 32]).join('');
-$('ntfyTopic').value = store.get('ntfyTopic', null) || ('ryme-ai-' + randId());
-store.set('ntfyTopic', $('ntfyTopic').value);
-$('ntfyTopic').addEventListener('input', () => store.set('ntfyTopic', $('ntfyTopic').value.trim()));
-$('phoneLink').value = store.get('phoneLink', 'https://rjlim0619-dev.github.io/ai-roundtable/');
-$('phoneLink').addEventListener('input', () => store.set('phoneLink', $('phoneLink').value.trim()));
-$('ringTimes').value = store.get('ringTimes', '5');
-$('ringTimes').addEventListener('change', () => store.set('ringTimes', $('ringTimes').value));
-$('notifyOn').checked = store.get('notifyOn', false);
-$('notifyOn').addEventListener('change', () => store.set('notifyOn', $('notifyOn').checked));
-$('copyTopic').onclick = async () => { try { await navigator.clipboard.writeText($('ntfyTopic').value); setStatus('Channel copied.'); } catch { setStatus('Copy failed; select it and press Ctrl+C.'); } };
-
-function buildBrief(){
-  const fin = [...transcript].reverse().find(m => m.kind === 'final');
-  let text = fin ? fin.text : transcript.filter(m => m.kind === 'agent').slice(-3).map(m => m.who + ': ' + m.text).join('\n\n');
-  const task = transcript.find(m => m.kind === 'user');
-  if (task) text = 'About your task "' + task.text.slice(0, 120) + '". ' + text;
-  return text.slice(0, 900);
-}
-async function notifyPhone(brief, title){
-  const topic = $('ntfyTopic').value.trim();
-  if (!topic) { setStatus('Set an alert channel first.'); return false; }
-  const link = $('phoneLink').value.trim().replace(/#.*$/, '');
-  try {
-    const res = await fetch('https://ntfy.sh/', { method:'POST', headers:{ 'Content-Type':'application/json' },
-      body: JSON.stringify({ topic, title: title || '📞 Head AI is calling', priority: 5, tags:['telephone_receiver'],
-        message: plainText(brief).slice(0, 180) + '… Tap to answer.',
-        click: link + '#brief=' + encodeURIComponent(brief) }) });
-    if (!res.ok) throw new Error(res.status + ' ' + (await res.text()).slice(0,120));
-    return true;
-  } catch (e) { sys('Phone alert failed: ' + e.message, true); return false; }
-}
-async function ringPhone(brief, title){
-  const n = +$('ringTimes').value || 1;
-  for (let i = 0; i < n; i++) {
-    const t = (title || '📞 Head AI is calling') + (n > 1 ? ` (ring ${i+1}/${n})` : '');
-    if (!(await notifyPhone(brief, t))) return false;
-    if (i < n - 1) { setStatus(`📱 Ringing your phone… ${i+1}/${n}`); await new Promise(r => setTimeout(r, 6000)); }
-  }
-  setStatus('');
-  return true;
-}
-$('testNotify').onclick = async () => {
-  if (await ringPhone('This is a test call from your AI Roundtable team. Everything is connected. Next time we finish a task, we will call you with the update.', '📞 Test call from Head AI')) setStatus('Test sent. Check your phone.');
-};
-// Pushover ringing alerts + Twilio real calls
-$('poSound').value = store.get('poSound', 'aicall');
-$('poSound').addEventListener('input', () => store.set('poSound', $('poSound').value.trim()));
-[['poUser','poUser'],['poToken','poToken'],['callUrl','callUrl'],['callSecret','callSecret']].forEach(([id,k]) => {
-  $(id).value = store.get(k, '');
-  $(id).addEventListener('input', () => store.set(k, $(id).value.trim()));
-});
-[['poOn','poOn'],['callOn','callOn']].forEach(([id,k]) => {
-  $(id).checked = store.get(k, false);
-  $(id).addEventListener('change', () => store.set(k, $(id).checked));
-});
-async function pushoverAlert(brief, title){
-  const user = $('poUser').value.trim(), token = $('poToken').value.trim();
-  if (!user || !token) { sys('Pushover: add your User Key and API Token first.', true); return false; }
-  const link = $('phoneLink').value.trim().replace(/#.*$/, '') + '#brief=' + encodeURIComponent(brief);
-  const body = new URLSearchParams({ token, user, title: title || '📞 Head AI is calling',
-    message: plainText(brief).slice(0, 900), priority: '2', retry: '30', expire: '300', sound: $('poSound').value.trim() || 'persistent',
-    url: link.slice(0, 512).length === link.length ? link : $('phoneLink').value.trim(), url_title: 'Answer the call' });
-  try {
-    const res = await fetch('https://api.pushover.net/1/messages.json', { method:'POST', body });
-    const d = await res.json().catch(() => ({}));
-    if (!res.ok || d.status !== 1) throw new Error((d.errors || [res.status]).join(', '));
-    return true;
-  } catch (e) {
-    if (e instanceof TypeError) { // browser blocked reading the reply; send anyway
-      try { await fetch('https://api.pushover.net/1/messages.json', { method:'POST', body, mode:'no-cors' }); return true; } catch {}
-    }
-    sys('Pushover failed: ' + e.message, true); return false;
-  }
-}
-async function realCall(brief){
-  const url = $('callUrl').value.trim(), secret = $('callSecret').value.trim();
-  if (!url || !secret) { sys('Real call: add your call link and password first.', true); return false; }
-  try {
-    const res = await fetch(url, { method:'POST', body: new URLSearchParams({ secret, message: plainText(brief).slice(0, 1200) }) });
-    const d = await res.json().catch(() => ({}));
-    if (!res.ok || !d.ok) throw new Error(d.error || res.status);
-    return true;
-  } catch (e) { sys('Real call failed: ' + e.message, true); return false; }
-}
-$('tgUser').value = store.get('tgUser', '');
-$('tgUser').addEventListener('input', () => store.set('tgUser', $('tgUser').value.trim()));
-$('tgOn').checked = store.get('tgOn', false);
-$('tgOn').addEventListener('change', () => store.set('tgOn', $('tgOn').checked));
-async function telegramCall(brief){
-  let user = $('tgUser').value.trim();
-  if (!user) { sys('Telegram call: add your Telegram username first.', true); return false; }
-  if (!user.startsWith('@') && !user.startsWith('+')) user = '@' + user;
-  const host = $('userName').value.trim() || 'Ryan';
-  const text = ('Hi ' + host + ', this is Head AI. ' + plainText(brief)).slice(0, 250);
-  const cleanUser = user.replace(/[^+@\w]/g, '');
-  const url = 'https://api.callmebot.com/start.php?user=' + cleanUser + '&' + new URLSearchParams({ text, lang:'en-US-Standard-C', rpt:'2', cc:'missed', timeout:'40' });
-  try { await fetch(url, { mode:'no-cors' }); return true; }
-  catch (e) { sys('Telegram call failed: ' + e.message, true); return false; }
-}
-$('tgTest').onclick = async () => { setStatus('📲 Calling your Telegram…'); if (await telegramCall('This is a test call. Your AI team can now call you on Telegram when they finish a task.')) setStatus('📲 Call requested. Your Telegram should ring in a few seconds.'); };
-$('poTest').onclick = async () => { if (await pushoverAlert('This is a test ringing alert from your AI team. Tap Acknowledge to stop it.', '📞 Test call from Head AI')) setStatus('Ringing alert sent. Check your phone.'); };
-$('callTest').onclick = async () => { setStatus('☎️ Calling your phone…'); if (await realCall('This is a test call. Your AI Roundtable phone calls are working. Next time we finish a task, we will call you with the update.')) setStatus('☎️ Call started. Your phone should ring in a few seconds.'); };
-
-// ---------- phone-style call screen (Head AI) ----------
-let inCall = false, callStart = 0, callTimer = null, callMuted = false;
-function showCallScreen(which){
-  $('callOverlay').style.display = 'block';
-  $('csIncoming').style.display = which === 'incoming' ? 'flex' : 'none';
-  $('csActive').style.display = which === 'active' ? 'flex' : 'none';
-  $('csReturn').style.display = 'none';
-}
-function setCaption(t){ if ($('csCaption')) $('csCaption').textContent = t; }
-function startCall(openingText){
-  inCall = true; callMuted = false; callStart = Date.now();
-  showCallScreen('active');
-  voiceOn = true; store.set('voiceOn', true); renderVoiceBtn();
-  $('csSpeaker').classList.add('on'); $('csMute').classList.remove('on');
-  $('autoListen').checked = true;
-  clearInterval(callTimer);
-  callTimer = setInterval(() => {
-    const sec = Math.floor((Date.now() - callStart) / 1000);
-    $('csTimer').textContent = String(Math.floor(sec/60)).padStart(2,'0') + ':' + String(sec%60).padStart(2,'0');
-  }, 1000);
-  if (openingText) {
-    const headAI = { id:'team', name:'Head AI', model:'call', color:'#00e5ff' };
-    transcript.push({ who:'Head AI', agentId:'team', text: openingText, kind:'agent' });
-    bubble(headAI, openingText, 'agent');
-    toggleRunning();
-  } else {
-    setCaption('Listening… say what you need.');
-    startListening();
-  }
-}
-function endCall(){
-  inCall = false; clearInterval(callTimer);
-  stopSpeaking(); if (listening) rec?.abort?.();
-  $('callOverlay').style.display = 'none'; $('csReturn').style.display = 'none';
-  $('autoListen').checked = store.get('autoListen', false);
-  sys('📞 Call with Head AI ended (' + $('csTimer').textContent + ').');
-}
-$('declineCall').onclick = () => { $('callOverlay').style.display = 'none'; };
-$('callNowBtn').onclick = () => startCall();
-$('csEnd').onclick = endCall;
-$('csSpeaker').onclick = () => {
-  voiceOn = !voiceOn; store.set('voiceOn', voiceOn); renderVoiceBtn();
-  $('csSpeaker').classList.toggle('on', voiceOn); if (!voiceOn) stopSpeaking();
-};
-$('csMute').onclick = () => {
-  callMuted = !callMuted; $('csMute').classList.toggle('on', callMuted);
-  if (callMuted && listening) rec?.abort?.();
-  setCaption(callMuted ? 'You are muted.' : 'Unmuted. Tap Talk to speak.');
-};
-$('csTalk').onclick = () => { if (callMuted) { callMuted = false; $('csMute').classList.remove('on'); } stopSpeaking(); startListening(); };
-$('csChat').onclick = $('csMin').onclick = () => { $('callOverlay').style.display = 'none'; if (inCall) $('csReturn').style.display = 'block'; };
-$('csReturn').onclick = () => showCallScreen('active');
-
-// incoming call (opened from the phone notification)
-(function checkIncoming(){
-  const m = location.hash.match(/^#brief=(.*)$/s);
-  if (!m) return;
-  let brief = ''; try { brief = decodeURIComponent(m[1]); } catch { return; }
-  history.replaceState(null, '', location.pathname + location.search);
-  showCallScreen('incoming');
-  try { navigator.vibrate?.([800, 400, 800, 400, 800]); } catch {}
-  $('answerCall').onclick = () => {
-    const host = $('userName').value.trim() || 'Ryan';
-    startCall('Hi ' + host + ', it\'s Head AI with an update from your team. ' + brief + ' What do you want us to do next?');
-  };
-})();
-
 // ---------- rendering ----------
 function hideEmpty(){ const e=$('empty'); if(e) e.remove(); }
 function scroll(){ const l=$('log'); l.scrollTop = l.scrollHeight; }
@@ -872,7 +594,6 @@ function bubble(a, text, kind){
   el.style.setProperty('--c', a.color);
   el.innerHTML = `<div class="av">${esc(initials(a.name))}</div><div class="bubble"><div class="who">${esc(a.name)}${kind==='final'?' · FINAL ANSWER':''} <small>${esc(a.model)}</small></div><div class="body">${md(text)}</div></div>`;
   $('log').appendChild(el); scroll();
-  if (inCall) setCaption(a.name + ': ' + plainText(text).slice(0, 140) + (text.length > 140 ? '…' : ''));
   speak(Math.max(0, agents.findIndex(x => x.id === a.id)), (kind==='final' ? 'Final answer. ' : '') + text, el);
 }
 function userBubble(text){
