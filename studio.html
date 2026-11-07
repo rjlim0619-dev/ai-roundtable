@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Story Studio · AI Roundtable</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+:root{--bg:#040812;--line:rgba(0,229,255,.35);--cyan:#00e5ff;--text:#dbe9ff;--muted:#7f95b8;--danger:#ff5577;--claude:#ff9a5c;--gpt:#3dffa8}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;font-size:15px}
+body{background:radial-gradient(1200px 600px at 80% -10%,rgba(0,229,255,.10),transparent 60%),radial-gradient(900px 500px at -10% 110%,rgba(140,80,255,.10),transparent 60%),linear-gradient(rgba(0,229,255,.035) 1px,transparent 1px) 0 0/100% 32px,var(--bg);min-height:100vh}
+button,input,select,textarea{font:inherit;color:inherit}
+header{display:flex;align-items:center;gap:14px;padding:12px 20px;border-bottom:1px solid var(--line);background:rgba(4,8,18,.85);position:sticky;top:0;z-index:5;flex-wrap:wrap}
+.logo{font-family:Orbitron,sans-serif;font-weight:700;letter-spacing:.12em;color:var(--cyan);text-shadow:0 0 12px rgba(0,229,255,.6);font-size:18px}
+.sub{color:var(--muted);font-size:13px}
+.spacer{flex:1}
+a.chip,.chip{padding:6px 12px;border:1px solid var(--line);background:transparent;cursor:pointer;text-decoration:none;color:var(--text);font-size:13px;clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px)}
+main{max-width:1200px;margin:0 auto;padding:20px;display:grid;gap:18px}
+.panel{background:linear-gradient(160deg,rgba(18,36,68,.9),rgba(8,16,32,.9));border:1px solid var(--line);padding:16px;clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px)}
+.panel h3{margin:0 0 12px;font-family:Orbitron,sans-serif;font-size:13px;letter-spacing:.14em;color:var(--cyan);text-transform:uppercase;display:flex;align-items:center;gap:10px}
+.step{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--cyan);color:#020611;font-size:12px}
+.who{font-family:Inter;font-size:11px;letter-spacing:0;text-transform:none;padding:2px 8px;border:1px solid currentColor;border-radius:10px}
+.who.claude{color:var(--claude)}.who.gpt{color:var(--gpt)}
+label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
+input[type=text],input[type=password],select,textarea{width:100%;background:#050c1a;border:1px solid rgba(0,229,255,.25);padding:8px 10px;outline:none;border-radius:2px}
+textarea{resize:vertical;line-height:1.45}
+input:focus,select:focus,textarea:focus{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(0,229,255,.15)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.btn{background:linear-gradient(90deg,rgba(0,229,255,.25),rgba(0,229,255,.08));border:1px solid var(--cyan);padding:10px 16px;cursor:pointer;font-weight:600;clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px)}
+.btn:hover{background:rgba(0,229,255,.35)}.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.ghost{background:transparent;border-color:var(--line);font-weight:500}
+.btn.stop{border-color:var(--danger);background:rgba(255,85,119,.15)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.hint{font-size:12px;color:var(--muted);line-height:1.5}
+.status{font-size:13px;color:var(--cyan);min-height:18px}
+.err{color:var(--danger)}
+.meta{display:grid;gap:8px}
+.scenes{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.scene{border:1px solid var(--line);background:rgba(5,12,26,.8);padding:10px;display:flex;flex-direction:column;gap:8px}
+.scene .num{font-family:Orbitron,sans-serif;color:var(--cyan);font-size:12px;letter-spacing:.1em;display:flex;justify-content:space-between;align-items:center}
+.frame{aspect-ratio:9/16;background:#020611;border:1px dashed rgba(0,229,255,.25);display:grid;place-items:center;color:var(--muted);font-size:12px;overflow:hidden;position:relative}
+.frame img{width:100%;height:100%;object-fit:cover;display:block}
+.frame .spin{width:28px;height:28px;border:3px solid rgba(0,229,255,.2);border-top-color:var(--cyan);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.scene textarea{font-size:13px}
+.small{font-size:12px;padding:6px 10px}
+.empty{color:var(--muted);text-align:center;padding:30px}
+footer{text-align:center;color:var(--muted);font-size:11px;padding:20px}
+@media (max-width:800px){.grid2,.grid4{grid-template-columns:1fr}}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">STORY STUDIO</div>
+  <div class="sub">Claude writes the story · ChatGPT draws the scenes</div>
+  <div class="spacer"></div>
+  <a class="chip" href="./">← AI Roundtable</a>
+</header>
+
+<main>
+  <section class="panel">
+    <h3><span class="step">1</span> Your idea <span class="who claude">Claude writes</span></h3>
+    <label>Story idea (leave empty and Claude invents an original one)</label>
+    <textarea id="idea" rows="2" placeholder="e.g. A kid finds out everyone can hear his thoughts except his crush"></textarea>
+    <div class="grid4">
+      <div><label>Number of scenes</label>
+        <select id="nScenes"><option>6</option><option selected>8</option><option>10</option><option>12</option></select></div>
+      <div><label>Claude model</label><input type="text" id="claudeModel"></div>
+      <div><label>Image model (ChatGPT)</label><input type="text" id="imgModel"></div>
+      <div><label>Image quality</label>
+        <select id="imgQuality"><option value="low">Low (cheapest, for testing)</option><option value="medium" selected>Medium</option><option value="high">High (costs most)</option></select></div>
+    </div>
+    <label>Main character (your avatar or any character; used in every scene for consistency)</label>
+    <textarea id="character" rows="2" placeholder="e.g. Ryan: teenage Roblox-style avatar, short black hair, white hoodie, black pants, simple blocky features"></textarea>
+    <label>Style rules (applied to every image)</label>
+    <textarea id="style" rows="2"></textarea>
+    <details style="margin-top:10px"><summary class="hint" style="cursor:pointer">API keys (already filled if you saved them in AI Roundtable)</summary>
+      <div class="grid2">
+        <div><label>Anthropic (Claude) key</label><input type="password" id="kAnth" placeholder="sk-ant-..."></div>
+        <div><label>OpenAI (ChatGPT) key</label><input type="password" id="kOai" placeholder="sk-..."></div>
+      </div>
+    </details>
+    <div class="row">
+      <button class="btn" id="writeBtn">✍️ Write story with Claude</button>
+      <span class="status" id="st1"></span>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h3><span class="step">2</span> Story &amp; scenes <span class="who claude">edit anything</span></h3>
+    <div id="storyBox"><div class="empty">Your story, script and one picture prompt per scene will appear here.</div></div>
+  </section>
+
+  <section class="panel">
+    <h3><span class="step">3</span> Images <span class="who gpt">ChatGPT draws</span></h3>
+    <div class="row" style="margin-top:0">
+      <button class="btn" id="drawAll" disabled>🎨 Draw all scenes with ChatGPT</button>
+      <button class="btn stop" id="stopBtn" style="display:none">Stop</button>
+      <label style="display:flex;gap:8px;align-items:center;margin:0;color:var(--text)"><input type="checkbox" id="useRef" checked> Keep characters consistent (use scene 1 as reference)</label>
+      <span class="status" id="st3"></span>
+    </div>
+    <p class="hint">Images are 1024×1536 portrait (crop to 9:16 when editing). Each image costs a little OpenAI credit, so try <b>Low</b> quality first. Click ↻ on any scene to redraw just that one.</p>
+    <div class="scenes" id="scenes"></div>
+  </section>
+
+  <section class="panel">
+    <h3><span class="step">4</span> Download</h3>
+    <div class="row" style="margin-top:0">
+      <button class="btn" id="zipBtn" disabled>⬇️ Download images + script (.zip)</button>
+      <button class="btn ghost" id="copyScript" disabled>Copy voice-over script</button>
+      <span class="status" id="st4"></span>
+    </div>
+    <p class="hint">The zip has scene01.png … plus script.txt (what to say in your voice-over), prompts.txt, and upload.txt (title, description, hashtags). Animate the images in Google Flow and record your own voice.</p>
+  </section>
+</main>
+<footer>Developed by Ryan James Lim</footer>
+
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+const get = (k, d) => { try { const v = localStorage.getItem('rt_' + k); return v == null ? d : JSON.parse(v); } catch { return d; } };
+const set = (k, v) => { try { localStorage.setItem('rt_' + k, JSON.stringify(v)); } catch {} };
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+const DEFAULT_STYLE = 'Vertical 9:16 portrait. Plain, simple and clean, not too colorful, soft natural lighting, no glow, no neon, no text or words in the image. Roblox-style 3D characters. Same location look and lighting in every scene.';
+const fields = { idea:['st_idea',''], nScenes:['st_n','8'], claudeModel:['st_cm','claude-sonnet-5-5'], imgModel:['st_im','gpt-image-2'], imgQuality:['st_q','medium'], character:['st_char',''], style:['st_style', DEFAULT_STYLE] };
+for (const [id,[k,d]] of Object.entries(fields)) { $(id).value = get(k, d); $(id).addEventListener('input', () => set(k, $(id).value)); $(id).addEventListener('change', () => set(k, $(id).value)); }
+$('kAnth').value = get('key_anthropic', ''); $('kOai').value = get('key_openai', '');
+$('kAnth').addEventListener('input', () => { if (get('remember', false)) set('key_anthropic', $('kAnth').value.trim()); });
+$('kOai').addEventListener('input', () => { if (get('remember', false)) set('key_openai', $('kOai').value.trim()); });
+
+let story = get('st_story', null);   // {title, logline, characters, scenes:[{narration,image_prompt}], youtube_title, description, hashtags}
+let images = [];                     // data URLs per scene (session only)
+let stopFlag = false;
+
+async function http(url, opts){
+  const res = await fetch(url, opts); const txt = await res.text();
+  let data; try { data = JSON.parse(txt); } catch { data = null; }
+  if (!res.ok) throw new Error(res.status + ': ' + (data?.error?.message || txt.slice(0, 300)));
+  return data;
+}
+
+// ---------- step 1: Claude writes ----------
+$('writeBtn').onclick = async () => {
+  const key = $('kAnth').value.trim();
+  if (!key) { $('st1').innerHTML = '<span class="err">Add your Claude key (open "API keys").</span>'; return; }
+  const n = +$('nScenes').value;
+  const idea = $('idea').value.trim();
+  const system = `You write original viral YouTube Shorts stories in the style of channels like Gneef: curiosity-building openings such as "In this world..." or "In this town...", simple language, a strong hook in the first line, and a satisfying plot twist at the end. Never copy existing stories. You also write image prompts for each scene for an AI image generator. Reply with ONLY valid JSON, no markdown.`;
+  const user = `Write a ${n}-scene story Short.
+Idea: ${idea || 'Invent a fresh, original idea with a clever twist.'}
+Main character: ${$('character').value.trim() || 'Invent one main character and describe their look precisely.'}
+Visual style for every image: ${$('style').value.trim()}
+
+Rules:
+- Scene 1 narration must open with "In this world..." or a similar curiosity opening.
+- Each scene's narration is 1-2 short spoken sentences (about 3-6 seconds). Whole story under 60 seconds.
+- The last scene delivers the twist.
+- Each image_prompt describes ONE clear moment, repeats every character's full look word-for-word (for consistency), names the location and camera angle, and says "vertical 9:16, no text".
+
+Return JSON exactly in this shape:
+{"title":"","logline":"","characters":[{"name":"","look":""}],"scenes":[{"narration":"","image_prompt":""}],"youtube_title":"","description":"","hashtags":["#shorts"]}`;
+  $('writeBtn').disabled = true; $('st1').textContent = 'Claude is writing your story…';
+  try {
+    const d = await http('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{ 'x-api-key': key, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true', 'content-type':'application/json' },
+      body: JSON.stringify({ model: $('claudeModel').value.trim(), max_tokens: 4000, system, messages:[{ role:'user', content: user }] })
+    });
+    const text = (d.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+    const json = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
+    if (!Array.isArray(json.scenes) || !json.scenes.length) throw new Error('Claude did not return any scenes. Try again.');
+    story = json; images = []; set('st_story', story);
+    renderStory(); $('st1').textContent = '✓ Story ready. Check it below, edit anything, then draw the images.';
+  } catch (e) { $('st1').innerHTML = '<span class="err">' + esc(e.message) + '</span>'; }
+  finally { $('writeBtn').disabled = false; }
+};
+
+// ---------- step 2: show & edit ----------
+function renderStory(){
+  const box = $('storyBox');
+  if (!story) return;
+  box.innerHTML = `
+    <div class="meta">
+      <div class="grid2">
+        <div><label>Title</label><input type="text" data-f="title" value="${esc(story.title)}"></div>
+        <div><label>YouTube title</label><input type="text" data-f="youtube_title" value="${esc(story.youtube_title)}"></div>
+      </div>
+      <div><label>Logline</label><input type="text" data-f="logline" value="${esc(story.logline)}"></div>
+      <div><label>Characters (used in every picture)</label><textarea rows="2" data-f="charText">${esc((story.characters||[]).map(c => c.name + ': ' + c.look).join('\n'))}</textarea></div>
+    </div>`;
+  box.querySelectorAll('[data-f]').forEach(el => el.addEventListener('input', () => {
+    const f = el.dataset.f;
+    if (f === 'charText') story.characters = el.value.split('\n').filter(Boolean).map(l => { const i = l.indexOf(':'); return { name: l.slice(0, i).trim(), look: l.slice(i + 1).trim() }; });
+    else story[f] = el.value;
+    set('st_story', story);
+  }));
+  renderScenes();
+  $('drawAll').disabled = false; $('zipBtn').disabled = false; $('copyScript').disabled = false;
+}
+function renderScenes(){
+  const wrap = $('scenes'); wrap.innerHTML = '';
+  story.scenes.forEach((sc, i) => {
+    const el = document.createElement('div'); el.className = 'scene';
+    el.innerHTML = `
+      <div class="num">SCENE ${String(i+1).padStart(2,'0')} <button class="btn ghost small" data-act="redo" title="Draw this scene again">↻ Draw</button></div>
+      <div class="frame" id="frame${i}">${images[i] ? `<img src="${images[i]}" alt="Scene ${i+1}">` : 'No image yet'}</div>
+      <label style="margin:0">Voice-over</label>
+      <textarea rows="2" data-k="narration">${esc(sc.narration)}</textarea>
+      <label style="margin:0">Picture prompt</label>
+      <textarea rows="4" data-k="image_prompt">${esc(sc.image_prompt)}</textarea>`;
+    el.querySelectorAll('textarea').forEach(t => t.addEventListener('input', () => { sc[t.dataset.k] = t.value; set('st_story', story); }));
+    el.querySelector('[data-act=redo]').onclick = () => drawScene(i, true);
+    wrap.appendChild(el);
+  });
+}
+if (story) renderStory();
+
+// ---------- step 3: ChatGPT draws ----------
+function fullPrompt(i){
+  const chars = (story.characters || []).map(c => `${c.name}: ${c.look}`).join('; ');
+  return `${$('style').value.trim()}\nCharacters (keep exactly the same look): ${chars}\nScene: ${story.scenes[i].image_prompt}`;
+}
+function dataUrlToBlob(u){ const [h, b] = u.split(','); const bin = atob(b); const a = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i); return new Blob([a], { type: h.match(/:(.*?);/)[1] }); }
+async function drawScene(i, single){
+  const key = $('kOai').value.trim();
+  if (!key) { $('st3').innerHTML = '<span class="err">Add your OpenAI key (open "API keys" in step 1).</span>'; return false; }
+  const frame = $('frame' + i); frame.innerHTML = '<div class="spin"></div>';
+  const model = $('imgModel').value.trim(), quality = $('imgQuality').value, size = '1024x1536';
+  try {
+    let d;
+    if ($('useRef').checked && i > 0 && images[0]) {
+      const fd = new FormData();
+      fd.append('model', model); fd.append('prompt', fullPrompt(i) + '\nUse the reference image only to keep the same characters, art style and lighting.');
+      fd.append('size', size); fd.append('quality', quality);
+      fd.append('image[]', dataUrlToBlob(images[0]), 'reference.png');
+      d = await http('https://api.openai.com/v1/images/edits', { method:'POST', headers:{ Authorization:'Bearer ' + key }, body: fd });
+    } else {
+      d = await http('https://api.openai.com/v1/images/generations', {
+        method:'POST', headers:{ Authorization:'Bearer ' + key, 'Content-Type':'application/json' },
+        body: JSON.stringify({ model, prompt: fullPrompt(i), size, quality, n: 1 })
+      });
+    }
+    const item = d.data?.[0];
+    images[i] = item?.b64_json ? 'data:image/png;base64,' + item.b64_json : item?.url;
+    if (!images[i]) throw new Error('No image returned');
+    frame.innerHTML = `<img src="${images[i]}" alt="Scene ${i+1}">`;
+    return true;
+  } catch (e) {
+    frame.innerHTML = `<div class="err" style="padding:10px;text-align:center">${esc(e.message)}</div>`;
+    if (single) $('st3').innerHTML = '<span class="err">Scene ' + (i+1) + ' failed.</span>';
+    return false;
+  }
+}
+$('drawAll').onclick = async () => {
+  stopFlag = false; $('drawAll').disabled = true; $('stopBtn').style.display = '';
+  let ok = 0;
+  for (let i = 0; i < story.scenes.length && !stopFlag; i++) {
+    $('st3').textContent = `ChatGPT is drawing scene ${i+1} of ${story.scenes.length}…`;
+    if (await drawScene(i)) ok++;
+  }
+  $('st3').textContent = stopFlag ? `Stopped. ${ok} images done.` : `✓ ${ok} of ${story.scenes.length} images done.`;
+  $('drawAll').disabled = false; $('stopBtn').style.display = 'none';
+};
+$('stopBtn').onclick = () => { stopFlag = true; };
+
+// ---------- step 4: export ----------
+function scriptText(){ return story.scenes.map((s, i) => `Scene ${i+1}: ${s.narration}`).join('\n\n'); }
+$('copyScript').onclick = async () => { try { await navigator.clipboard.writeText(scriptText()); $('st4').textContent = 'Script copied.'; } catch { $('st4').textContent = 'Copy failed.'; } };
+$('zipBtn').onclick = async () => {
+  if (!window.JSZip) { $('st4').innerHTML = '<span class="err">Zip library did not load. Check your internet.</span>'; return; }
+  const zip = new JSZip();
+  const safe = (story.title || 'story').replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_') || 'story';
+  zip.file('script.txt', `${story.title}\n\n${scriptText()}\n`);
+  zip.file('prompts.txt', story.scenes.map((s, i) => `Scene ${i+1}:\n${fullPrompt(i)}`).join('\n\n---\n\n'));
+  zip.file('upload.txt', `Title: ${story.youtube_title || story.title}\n\nDescription:\n${story.description || ''}\n\n${(story.hashtags || []).join(' ')}\n`);
+  let count = 0;
+  for (let i = 0; i < story.scenes.length; i++) {
+    if (!images[i]) continue;
+    const name = `scene${String(i+1).padStart(2,'0')}.png`;
+    if (images[i].startsWith('data:')) zip.file(name, images[i].split(',')[1], { base64: true });
+    else { try { zip.file(name, await (await fetch(images[i])).blob()); } catch {} }
+    count++;
+  }
+  const blob = await zip.generateAsync({ type:'blob' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = safe + '.zip'; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+  $('st4').textContent = `✓ Downloaded ${safe}.zip (${count} images + script).`;
+};
+})();
+</script>
+</body>
+</html>
