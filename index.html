@@ -210,7 +210,7 @@ footer{font-size:11px;color:var(--muted);text-align:center;padding-top:4px}
       <h3>📲 Real ringing call (Telegram, free)</h3>
       <div class="check"><input type="checkbox" id="tgOn"> Call me on Telegram when the team finishes</div>
       <label>Your Telegram username</label>
-      <input type="text" id="tgUser" placeholder="@yourname">
+      <input type="text" id="tgUser" placeholder="@yourname or +639XXXXXXXXX">
       <div style="margin-top:10px"><button class="btn ghost" id="tgTest" style="width:100%">Test Telegram call</button></div>
       <div class="hint">First, in Telegram send <b>/start</b> to <b>@CallMeBot_txtbot</b> so it's allowed to call you. Your phone rings like a real call and Head AI reads the update (short version) when you answer.</div>
     </div>
@@ -785,7 +785,8 @@ async function telegramCall(brief){
   if (!user.startsWith('@') && !user.startsWith('+')) user = '@' + user;
   const host = $('userName').value.trim() || 'Ryan';
   const text = ('Hi ' + host + ', this is Head AI. ' + plainText(brief)).slice(0, 250);
-  const url = 'https://api.callmebot.com/start.php?' + new URLSearchParams({ user, text, lang:'en-US-Standard-C', rpt:'2', cc:'missed', timeout:'40' });
+  const cleanUser = user.replace(/[^+@\w]/g, '');
+  const url = 'https://api.callmebot.com/start.php?user=' + cleanUser + '&' + new URLSearchParams({ text, lang:'en-US-Standard-C', rpt:'2', cc:'missed', timeout:'40' });
   try { await fetch(url, { mode:'no-cors' }); return true; }
   catch (e) { sys('Telegram call failed: ' + e.message, true); return false; }
 }
