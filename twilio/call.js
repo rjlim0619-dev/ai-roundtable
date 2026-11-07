@@ -23,13 +23,13 @@ exports.handler = async function (context, event, callback) {
   const twiml = new Twilio.twiml.VoiceResponse();
   const voice = { voice: 'Polly.Joanna' };
   twiml.pause({ length: 1 });
-  twiml.say(voice, 'Hi Ryan! This is your A I team calling with an update.');
+  twiml.say(voice, 'Hi Ryan! This is Head A I calling with an update from your team.');
   twiml.pause({ length: 1 });
   twiml.say(voice, text);
   twiml.pause({ length: 1 });
   twiml.say(voice, 'Once more, here is the update.');
   twiml.say(voice, text);
-  twiml.say(voice, 'That is all for now. Open your A I Roundtable app to reply. Goodbye!');
+  twiml.say(voice, 'That is all for now. Open your A I Roundtable app to reply. Head A I, signing off.');
 
   try {
     const call = await context.getTwilioClient().calls.create({
