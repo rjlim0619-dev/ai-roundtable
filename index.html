@@ -207,6 +207,15 @@ footer{font-size:11px;color:var(--muted);text-align:center;padding-top:4px}
     </div>
 
     <div class="panel">
+      <h3>📲 Real ringing call (Telegram, free)</h3>
+      <div class="check"><input type="checkbox" id="tgOn"> Call me on Telegram when the team finishes</div>
+      <label>Your Telegram username</label>
+      <input type="text" id="tgUser" placeholder="@yourname">
+      <div style="margin-top:10px"><button class="btn ghost" id="tgTest" style="width:100%">Test Telegram call</button></div>
+      <div class="hint">First, in Telegram send <b>/start</b> to <b>@CallMeBot_txtbot</b> so it's allowed to call you. Your phone rings like a real call and Head AI reads the update (short version) when you answer.</div>
+    </div>
+
+    <div class="panel">
       <h3>☎️ Real phone call (Twilio)</h3>
       <div class="check"><input type="checkbox" id="callOn"> Call my real phone when the team finishes</div>
       <label>Your call link (Twilio Function URL)</label>
@@ -562,6 +571,7 @@ async function runRounds(){
   if (completed && transcript.some(m => m.kind !== 'user')) {
     if ($('poOn').checked && await pushoverAlert(buildBrief())) sys('🚨 Ringing alert sent (repeats until you acknowledge).');
     if ($('callOn').checked && await realCall(buildBrief())) sys('☎️ Calling your real phone now.');
+    if ($('tgOn').checked && await telegramCall(buildBrief())) sys('📲 Head AI is calling you on Telegram.');
   }
 }
 async function agentTurn(a, active, prompt, kind){
@@ -765,6 +775,21 @@ async function realCall(brief){
     return true;
   } catch (e) { sys('Real call failed: ' + e.message, true); return false; }
 }
+$('tgUser').value = store.get('tgUser', '');
+$('tgUser').addEventListener('input', () => store.set('tgUser', $('tgUser').value.trim()));
+$('tgOn').checked = store.get('tgOn', false);
+$('tgOn').addEventListener('change', () => store.set('tgOn', $('tgOn').checked));
+async function telegramCall(brief){
+  let user = $('tgUser').value.trim();
+  if (!user) { sys('Telegram call: add your Telegram username first.', true); return false; }
+  if (!user.startsWith('@') && !user.startsWith('+')) user = '@' + user;
+  const host = $('userName').value.trim() || 'Ryan';
+  const text = ('Hi ' + host + ', this is Head AI. ' + plainText(brief)).slice(0, 250);
+  const url = 'https://api.callmebot.com/start.php?' + new URLSearchParams({ user, text, lang:'en-US-Standard-C', rpt:'2', cc:'missed', timeout:'40' });
+  try { await fetch(url, { mode:'no-cors' }); return true; }
+  catch (e) { sys('Telegram call failed: ' + e.message, true); return false; }
+}
+$('tgTest').onclick = async () => { setStatus('📲 Calling your Telegram…'); if (await telegramCall('This is a test call. Your AI team can now call you on Telegram when they finish a task.')) setStatus('📲 Call requested. Your Telegram should ring in a few seconds.'); };
 $('poTest').onclick = async () => { if (await pushoverAlert('This is a test ringing alert from your AI team. Tap Acknowledge to stop it.', '📞 Test call from Head AI')) setStatus('Ringing alert sent. Check your phone.'); };
 $('callTest').onclick = async () => { setStatus('☎️ Calling your phone…'); if (await realCall('This is a test call. Your AI Roundtable phone calls are working. Next time we finish a task, we will call you with the update.')) setStatus('☎️ Call started. Your phone should ring in a few seconds.'); };
 
